@@ -30,28 +30,28 @@ def db_setup(con: sqlite3.Connection):
     """
     cur = con.cursor()
     cur.execute("""
-                CREATE TABLE IF NOT EXISTS discord_id_name (
+                CREATE TABLE IF NOT EXISTS player_info (
                     discord_id TEXT PRIMARY KEY, 
                     player_name TEXT NOT NULL, 
-                    group_name TEXT NOT NULL
+                    group_name TEXT NOT NULL,
+                    secret_word TEXT NOT NULL
                 )
                 """)
-    debug(f'Created table discord_id_name successfully.')
+    debug(f'Created table player_info successfully.')
 
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS target_assignments (
                     player_discord_id TEXT PRIMARY KEY, 
-                    target_discord_id UNIQUE NOT NULL, 
-                    secret_word TEXT NOT NULL
+                    target_discord_id UNIQUE NOT NULL
                 )
                 """)
     debug(f'Created table target_assignments successfully.')
 
     cur.execute("""
                 CREATE TABLE IF NOT EXISTS kill_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
                     player_discord_id TEXT NOT NULL, 
-                    target_discord_id TEXT PRIMARY KEY,
-                    secret_word TEXT NOT NULL,
+                    target_discord_id TEXT NOT NULL,
                     TIMESTAMP TEXT NOT NULL
                 )
                 """)
@@ -71,14 +71,16 @@ def add_initial_data(con: sqlite3.Connection, csv_source_filename: str):
     """
 
     table_data = ingest_csv(csv_source_filename)
-    discord_id_name_data = [(r[0], r[1], r[2]) for r in table_data]
-    target_assignments_data = [(r[0], r[3], r[4]) for r in table_data]
+    player_info_data = [(r[0], r[1], r[2], r[4]) for r in table_data]
+    target_assignments_data = [(r[0], r[3]) for r in table_data]
     cur = con.cursor()
 
-    cur.executemany("INSERT OR REPLACE INTO discord_id_name VALUES(?, ?, ?)", (discord_id_name_data))
+    cur.executemany("""INSERT OR REPLACE INTO player_info 
+                    (discord_id, player_name, group_name, secret_word) VALUES(?, ?, ?, ?)
+                    """, (player_info_data))
     con.commit()
 
-    cur.executemany("INSERT OR REPLACE INTO target_assignments VALUES(?, ?, ?)", (target_assignments_data))
+    cur.executemany("INSERT OR REPLACE INTO target_assignments (player_discord_id, target_discord_id) VALUES(?, ?)", (target_assignments_data))
     con.commit()
 
     
