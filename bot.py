@@ -22,6 +22,9 @@ async def target(ctx: discord.ApplicationContext):
         await ctx.respond(f"You have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}", ephemeral=True)
         return
     target_id, target_name, group_name, _ = target_info
+    if target_id == player_discord_id:
+        await ctx.respond(f"# You win! \nyou have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}", ephemeral=True)
+        return
     await ctx.respond(f"Your target is {target_name} (discord: `@{target_id}`) from {group_name}", ephemeral=True)
 
 @bot.slash_command(guild_ids=GUILD_IDS, name="get-secret", description="Tells you your Secret Word")
@@ -52,9 +55,7 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
         await ctx.send(f"{player_name} has successfully eliminated {target_name}!")
         await ctx.respond(f" Run `/get-target` to get your new target.", ephemeral=True)
     else:
-        await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly.
-                          
-                          If you think there has been a mistake, contact an admin.
+        await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
                           """, ephemeral=True)
 
 def setup():
@@ -62,7 +63,7 @@ def setup():
     db_setup(con)
     add_initial_data(con, 'sockwars_initial_data.csv')
 
-# setup()
+#setup()
 bot.load_extension('cogs.admin')
 bot.run(TOKEN)
 

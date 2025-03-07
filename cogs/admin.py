@@ -41,7 +41,7 @@ class Admin(commands.Cog):
             await ctx.respond(f"No Player associated with {player_discord_id}")
         else:
             player_name, _, secret_word = player_info
-            await ctx.respond(f"{player_name}'s secret word is {secret_word}", ephemeral=True)
+            await ctx.respond(f"{player_name}'s secret word is ||{secret_word}||", ephemeral=True)
 
     @admin.command(name="sock", description="(admin) Eliminate a player")
     @discord.default_permissions(administrator=True)
