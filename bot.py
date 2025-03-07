@@ -26,12 +26,14 @@ async def retrieve_secret_word(ctx: discord.ApplicationContext):
     player_name, group_name, secret_word = get_player_info(con, player_discord_id)
     await ctx.respond(f"Hi {player_name}, Your Secret Word is ||{secret_word}||", ephemeral=True)
 
+
 def setup():
     con = create_db_connection()
     db_setup(con)
     add_initial_data(con, 'sockwars_initial_data.csv')
 
 # setup()
+bot.load_extension('cogs.admin')
 bot.run(TOKEN)
 
 

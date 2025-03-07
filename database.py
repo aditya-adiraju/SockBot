@@ -108,7 +108,7 @@ def get_player_target(con: sqlite3.Connection, player_discord_id: str) -> str | 
     target_discord_id = row[0]
     return target_discord_id
 
-def get_player_info(con: sqlite3.Connection, discord_id: str) -> tuple[str, str, str, str] | None:
+def get_player_info(con: sqlite3.Connection, discord_id: str) -> tuple[str, str, str] | None:
     """Retrieves a given player's information
 
     Args:
