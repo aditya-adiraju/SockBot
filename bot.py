@@ -26,6 +26,11 @@ async def retrieve_secret_word(ctx: discord.ApplicationContext):
     player_name, group_name, secret_word = get_player_info(con, player_discord_id)
     await ctx.respond(f"Hi {player_name}, Your Secret Word is ||{secret_word}||", ephemeral=True)
 
+@bot.slash_command(guild_ids=GUILD_IDS, name="rules", description="The rules of the competition!")
+async def rules(ctx: discord.ApplicationContext):
+    with open('rules.md') as f:
+        rules ='\n'.join(line.rstrip() for line in f)
+    await ctx.respond(rules, ephemeral=True)
 
 def setup():
     con = create_db_connection()
