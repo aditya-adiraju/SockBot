@@ -12,3 +12,5 @@ GUILD_ID = int(os.environ['GUILD_ID'])
 
 # Convenience variable...
 GUILD_IDS = [GUILD_ID]
+
+YOU_HAVE_NO_ENEMIES="https://imgur.com/F628Puf"
