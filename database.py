@@ -52,7 +52,7 @@ def db_setup(con: sqlite3.Connection):
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     player_discord_id TEXT NOT NULL, 
                     target_discord_id TEXT NOT NULL,
-                    TIMESTAMP TEXT NOT NULL
+                    TIMESTAMP TEXT NOT NULL DEFAULT current_timestamp
                 )
                 """)
     debug(f'Created table kill_log successfully.')
@@ -71,6 +71,7 @@ def add_initial_data(con: sqlite3.Connection, csv_source_filename: str):
     """
 
     table_data = ingest_csv(csv_source_filename)
+    print(table_data)
     player_info_data = [(r[0], r[1], r[2], r[4]) for r in table_data]
     target_assignments_data = [(r[0], r[3]) for r in table_data]
     cur = con.cursor()
@@ -133,7 +134,7 @@ def get_player_info(con: sqlite3.Connection, discord_id: str) -> tuple[str, str,
     return (player_name, group_name, secret_word)
 
 def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[str, str, str, str] | None:
-    """Retrieves a given player's information
+    """Retrieves a given player's target information
 
     Args:
         con: sqlite Database connection
@@ -162,6 +163,48 @@ def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[st
 
     return (target_discord_id, player_name, group_name, secret_word)
     
+def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str):
+    """Eliminate a given player from the game.
+
+    Args:
+        con: database connection
+        elminated_discord_id: discord ID of player to eliminate.
+    """
+
+    info(f"eliminating {eliminated_discord_id}...")
+
+    cur = con.cursor()
+    res = cur.execute("""SELECT player_discord_id FROM target_assignments 
+                         WHERE  target_discord_id = ?
+                         LIMIT  1""", (eliminated_discord_id, ))
+
+    if (row := res.fetchone()) is None: return None
+    player_discord_id = row[0]
+
+    if (new_target_info := get_target_info(con, eliminated_discord_id)) is None: return None
+    new_target_discord_id, _, _, _ = new_target_info
+
+    cur.execute("""
+    INSERT INTO kill_log (player_discord_id, target_discord_id) VALUES (?, ?) 
+    """, (player_discord_id, eliminated_discord_id,))
+    con.commit()
+
+    cur.execute("""
+    DELETE FROM target_assignments WHERE player_discord_id = ? 
+    """, (eliminated_discord_id,))
+    con.commit()
+
+    info(f"Successfully eliminated {eliminated_discord_id}.")
+
+    cur.execute("""
+    UPDATE target_assignments SET target_discord_id = ? WHERE player_discord_id = ? 
+    """, (new_target_discord_id, player_discord_id,))
+    con.commit()
+
+    info(f"Assigned new target to {player_discord_id}: {new_target_discord_id}.")
+
+
 
 def create_db_connection() -> sqlite3.Connection:
+    """Returns a connection to the database."""
     return sqlite3.connect(DATABASE_PATH)
