@@ -163,7 +163,5 @@ def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[st
     return (target_discord_id, player_name, group_name, secret_word)
     
 
-con = sqlite3.connect(DATABASE_PATH)
-info(f"Connected to database: {DATABASE_PATH} successfully")
-db_setup(con)
-print(get_target_info(con, '1234567890'))
+def create_db_connection() -> sqlite3.Connection:
+    return sqlite3.connect(DATABASE_PATH)
