@@ -1,5 +1,6 @@
 import sqlite3
 import csv
+from typing import Literal
 from logger import info, debug, error
 
 
@@ -203,8 +204,65 @@ def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str):
 
     info(f"Assigned new target to {player_discord_id}: {new_target_discord_id}.")
 
+def undo_last_kill() -> tuple[str, str, str] | None:
+    """Undoes the last kill as detailed in kill_log
+
+    Returns
+        the undone kill_id, player discord id, eliminated discord id 
+    """
+    con = create_db_connection("EXCLUSIVE", 30)
+    cur = con.cursor()
+    try:
+        res = cur.execute("""
+        SELECT id, player_discord_id, target_discord_id
+        FROM kill_log
+        ORDER BY TIMESTAMP DESC
+        LIMIT 1
+        """)
+
+        kill_info = res.fetchone()
+        if kill_info is None:
+            # No kills left
+            return None
+        kill_id, player_discord_id, eliminated_discord_id = kill_info
+        info(f"Undoing kill_id {kill_id}...")
+
+        target_discord_id = get_target_info(con, player_discord_id)[0]
+        debug(f"rollback target for {player_discord_id}...")
+        cur.execute("""
+        UPDATE target_assignments
+        SET target_discord_id = ?
+        WHERE player_discord_id = ? 
+        """, (eliminated_discord_id, player_discord_id,))
+
+        debug(f"inserting target for {eliminated_discord_id}...")
+        cur.execute("""
+        INSERT INTO target_assignments (player_discord_id, target_discord_id)
+        VALUES(?, ?)
+        """, 
+        (eliminated_discord_id, target_discord_id,))
+
+        debug(f"DELETE kill_log with ID: {kill_id}")
+        cur.execute("""
+        DELETE FROM kill_log where id = ?
+        """, 
+        (kill_id,))
+        con.commit()
+        return kill_info
+    finally:
+        cur.close()
+        con.close()
 
 
-def create_db_connection() -> sqlite3.Connection:
-    """Returns a connection to the database."""
-    return sqlite3.connect(DATABASE_PATH)
+def create_db_connection(\
+            isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",
+            timeout: float = 5.0
+                         ) -> sqlite3.Connection:   
+        
+    """Returns a connection to the database.
+
+    Args:
+        isolation_level: defines the isolation level of the connection.
+        timeout: connection timeout threshold. 
+    """
+    return sqlite3.connect(DATABASE_PATH, isolation_level=isolation_level, timeout=timeout)
