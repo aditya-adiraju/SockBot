@@ -65,6 +65,7 @@ def setup():
 
 #setup()
 bot.load_extension('cogs.admin')
+bot.load_extension('cogs.stat')
 bot.run(TOKEN)
 
 
