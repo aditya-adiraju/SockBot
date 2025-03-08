@@ -164,12 +164,15 @@ def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[st
 
     return (target_discord_id, player_name, group_name, secret_word)
     
-def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str):
+def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str) -> int | None:
     """Eliminate a given player from the game.
 
     Args:
         con: database connection
         elminated_discord_id: discord ID of player to eliminate.
+
+    Returns:
+        the Kill ID for the latest elimination
     """
 
     info(f"eliminating {eliminated_discord_id}...")
@@ -188,14 +191,14 @@ def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str):
     cur.execute("""
     INSERT INTO kill_log (player_discord_id, target_discord_id) VALUES (?, ?) 
     """, (player_discord_id, eliminated_discord_id,))
-    con.commit()
+
+    kill_id = cur.lastrowid
 
     cur.execute("""
     DELETE FROM target_assignments WHERE player_discord_id = ? 
     """, (eliminated_discord_id,))
-    con.commit()
 
-    info(f"Successfully eliminated {eliminated_discord_id}.")
+    info(f"Successfully eliminated {eliminated_discord_id}. kill_id: {kill_id}")
 
     cur.execute("""
     UPDATE target_assignments SET target_discord_id = ? WHERE player_discord_id = ? 
@@ -203,30 +206,47 @@ def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str):
     con.commit()
 
     info(f"Assigned new target to {player_discord_id}: {new_target_discord_id}.")
+    return kill_id
 
-def undo_last_kill() -> tuple[str, str, str] | None:
+def get_last_kill(con: sqlite3.Connection) -> tuple[str, str, str] | None:
+    """Rerieves the last kill as detailed in kill_log
+    Args:
+        con: database connection
+    Returns
+        the last kill_id, player discord id, eliminated discord id 
+    """
+    cur = con.cursor()
+    res = cur.execute("""
+    SELECT id, player_discord_id, target_discord_id
+    FROM kill_log
+    ORDER BY TIMESTAMP DESC
+    LIMIT 1
+    """)
+
+    kill_info = res.fetchone()
+    if kill_info is None:
+        # No kills left
+        return None
+    kill_id, player_discord_id, eliminated_discord_id = kill_info
+    return (kill_id, player_discord_id, eliminated_discord_id)
+
+def undo_last_kill(con:sqlite3.Connection | None=None) -> tuple[str, str, str] | None:
     """Undoes the last kill as detailed in kill_log
 
     Returns
         the undone kill_id, player discord id, eliminated discord id 
     """
-    con = create_db_connection("EXCLUSIVE", 30)
+    close_con = True if con is None else False
+    if con is None:
+        con = create_db_connection("EXCLUSIVE", 30)
     cur = con.cursor()
     try:
-        res = cur.execute("""
-        SELECT id, player_discord_id, target_discord_id
-        FROM kill_log
-        ORDER BY TIMESTAMP DESC
-        LIMIT 1
-        """)
-
-        kill_info = res.fetchone()
+        kill_info = get_last_kill(con)
         if kill_info is None:
-            # No kills left
+            # No kills left to undo
             return None
         kill_id, player_discord_id, eliminated_discord_id = kill_info
         info(f"Undoing kill_id {kill_id}...")
-
         target_discord_id = get_target_info(con, player_discord_id)[0]
         debug(f"rollback target for {player_discord_id}...")
         cur.execute("""
@@ -251,8 +271,34 @@ def undo_last_kill() -> tuple[str, str, str] | None:
         return kill_info
     finally:
         cur.close()
-        con.close()
+        if close_con: con.close()
 
+def roll_back_kills_to_id(rollback_id: int) -> int:
+    """
+    Rollback kills up to kill_id `rollback_id`
+
+    Args:
+        rollback_id: the kill ID to roll back to.
+    
+    Returns:
+        Number of kills rolled back
+    """
+    con = create_db_connection("EXCLUSIVE", 30)
+    cur = con.cursor()
+    info(f"Rolling back kills to {rollback_id}")
+    count = 0
+    try:
+        while True:
+            if (kill_info := get_last_kill(con)) is None:
+                return count
+            elif kill_info[0] > rollback_id:
+                undo_last_kill(con)
+                count += 1
+            else:
+                return count
+    finally:
+        cur.close()
+        con.close() 
 
 def create_db_connection(\
             isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",
