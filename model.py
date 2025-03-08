@@ -1,6 +1,26 @@
 # A list of helper classes to define data
 from datetime import datetime
 
+
+class PLAYER:
+    HEADER = f"{"player_id":<20}{"player_name":<30}{"group_name":<15}{"secret_word":<15}{"ELIMINATED"}"
+    def __init__(self, player_discord_id: str, player_name: str, group_name: str, secret_word: str, eliminated: bool = False):
+        self.player_id = player_discord_id.strip()
+        self.player_name = player_name.strip()
+        self.group_name = group_name.strip()
+        self.secret_word = secret_word.strip()
+        self.eliminated = eliminated 
+
+    def __str__(self):
+        return f"{self.player_id:<20}{self.player_name:<30}{self.group_name:<15}{self.secret_word:<15}{self.eliminated}"
+class TARGET_ASSIGNMENT:
+    HEADER = f"{"player_id":<20}{"target_id":<20}"
+    def __init__(self, player_discord_id: str, target_discord_id: str):
+        self.player_id = player_discord_id.strip()
+        self.target_id = target_discord_id.strip()
+
+    def __str__(self):
+        return f"{self.player_id:<20}{self.target_id:<20}"
 class KILL_SUMMARY:
     HEADER = f"{"player_discord_id":<20}{"Kills"}"
     def __init__(self, player_discord_id: str, kills: int):
