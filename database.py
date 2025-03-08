@@ -1,10 +1,21 @@
 import sqlite3
 import csv
+from datetime import datetime
 from typing import Literal
 from logger import info, debug, error
 
 
 DATABASE_PATH = 'sockwars.db'
+
+class Kill_entry:
+    def __init__(self, id: int, player_discord_id: str, eliminated_discord_id: str, timestamp: datetime):
+        self.id = id
+        self.player_discord_id = player_discord_id
+        self.eliminated_discord_id = eliminated_discord_id
+        self.timestamp = timestamp
+
+    def __str__(self):
+        return f"{self.id:<5}{self.player_discord_id.strip():<20}{self.eliminated_discord_id.strip():<20}{self.timestamp.strftime('%Y-%m-%d %H:%M:%S')}"
 
 def ingest_csv(filename: str) -> list[tuple[str]]:
     """ Returns the CSV data from `filename` in the right format to insert to sqlite3
@@ -299,6 +310,76 @@ def roll_back_kills_to_id(rollback_id: int) -> int:
     finally:
         cur.close()
         con.close() 
+
+
+def get_all_kills(con: sqlite3.Connection) -> list[Kill_entry]: 
+    """Get all the kills from the game. 
+    
+    Return: 
+        A list of all the kills.
+    """
+    cur = con.cursor()
+    res = cur.execute("SELECT id, player_discord_id, target_discord_id, datetime(timestamp, 'localtime') FROM kill_log")
+    results = res.fetchall()
+    kills = []
+    for result in results:
+        kill_id, player_discord_id, eliminated_discord_id, timestamp = result
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        kills.append(Kill_entry(kill_id, player_discord_id, eliminated_discord_id, timestamp))
+
+    return kills
+
+def get_kills_on_date(con: sqlite3.Connection, date: datetime) -> list[Kill_entry]: 
+    """Get all the kills from the game between specified Dates
+
+    Args:
+        con: database connection
+        date: date to retrieve kills 
+
+    Return: 
+        A list of all the kills on the specified date
+    """
+    cur = con.cursor()
+    datetime_to_date = lambda d : d.strftime("%Y-%m-%d")
+    sql_start = "SELECT id, player_discord_id, target_discord_id, datetime(timestamp, 'localtime') FROM kill_log "
+    res = cur.execute(sql_start + " WHERE date(timestamp, 'localtime') = ?", (datetime_to_date(date),))
+
+    results = res.fetchall()
+    kills = []
+    for result in results:
+        kill_id, player_discord_id, eliminated_discord_id, timestamp = result
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        kills.append(Kill_entry(kill_id, player_discord_id, eliminated_discord_id, timestamp))
+
+    return kills
+
+def get_kills_between_dates(con: sqlite3.Connection, start_date: datetime, end_date: datetime | None = None) -> list[Kill_entry]: 
+    """Get all the kills from the game between specified Dates
+
+    Args:
+        con: database connection
+        start_date: Start date (inclusive)
+        end_date: end date (inclusive) if None (default), function returns all kills from `start_date`
+
+    Return: 
+        A list of all the kills between specified dates
+    """
+    cur = con.cursor()
+    datetime_to_date = lambda d : d.strftime("%Y-%m-%d")
+    sql_start = "SELECT id, player_discord_id, target_discord_id, datetime(timestamp, 'localtime') FROM kill_log "
+    if end_date:
+        res = cur.execute(sql_start  + " WHERE date(timestamp, 'localtime') BETWEEN ? AND ?", (datetime_to_date(start_date), datetime_to_date(end_date),))
+    else:
+        res = cur.execute(sql_start + " WHERE date(timestamp, 'localtime') >= ?", (datetime_to_date(start_date),))
+
+    results = res.fetchall()
+    kills = []
+    for result in results:
+        kill_id, player_discord_id, eliminated_discord_id, timestamp = result
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        kills.append(Kill_entry(kill_id, player_discord_id, eliminated_discord_id, timestamp))
+
+    return kills
 
 def create_db_connection(\
             isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",
