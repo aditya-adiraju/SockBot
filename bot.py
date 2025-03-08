@@ -51,8 +51,8 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
     target_id, target_name, _, target_secret_word = target_info
 
     if target_secret_word.strip().lower() == secret_word.strip().lower():
-        eliminate_player(con, target_id)
-        await ctx.send(f"{player_name} has successfully eliminated {target_name}!")
+        kill_id = eliminate_player(con, target_id)
+        await ctx.send(f"{player_name} has successfully eliminated {target_name}! (kill ID: {kill_id})")
         await ctx.respond(f" Run `/get-target` to get your new target.", ephemeral=True)
     else:
         await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
