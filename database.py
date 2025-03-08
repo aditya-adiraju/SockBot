@@ -345,11 +345,11 @@ def get_kills_between_dates(con: sqlite3.Connection, start_date: datetime, end_d
     """
     cur = con.cursor()
     datetime_to_date = lambda d : d.strftime("%Y-%m-%d")
-    if end_date is None: 
-        end_date = start_date 
-
     sql_start = "SELECT id, player_discord_id, target_discord_id, datetime(timestamp, 'localtime') FROM kill_log "
-    res = cur.execute(sql_start  + " WHERE date(timestamp, 'localtime') BETWEEN ? AND ?", (datetime_to_date(start_date), datetime_to_date(end_date),))
+    if end_date:
+        res = cur.execute(sql_start  + " WHERE date(timestamp, 'localtime') BETWEEN ? AND ?", (datetime_to_date(start_date), datetime_to_date(end_date),))
+    else:
+        res = cur.execute(sql_start + " WHERE date(timestamp, 'localtime') >= ?", (datetime_to_date(start_date),))
 
     results = res.fetchall()
     kills = []
@@ -377,7 +377,7 @@ def get_top_kills(con: sqlite3.Connection, ) -> list[KILL_SUMMARY]:
     ORDER BY kill_count DESC
     """)
     results = res.fetchall()
-    kill_summary_list = results
+    kill_summary_list = []
     for row in results:
         player_id, kill_count = row
         kill_summary_list.append(KILL_SUMMARY(player_id, kill_count))
@@ -397,18 +397,20 @@ def get_top_kills_between_dates(con: sqlite3.Connection, start_date: datetime, e
     """
 
     datetime_to_date = lambda d : d.strftime("%Y-%m-%d")
-    if end_date is None: 
-        end_date = start_date 
     cur = con.cursor()
-    res = cur.execute("""
-    SELECT player_discord_id, count(player_discord_id) as kill_count FROM kill_log
-    WHERE date(TIMESTAMP, 'localtime') BETWEEN ? AND ?
+    sql = "SELECT player_discord_id, count(player_discord_id) as kill_count FROM kill_log "
+    sql_footer = """
     GROUP BY player_discord_id
     ORDER BY kill_count DESC
-    """, (datetime_to_date(start_date), datetime_to_date(end_date)))
+    """ 
+
+    if end_date:
+        res = cur.execute(sql + " WHERE date(timestamp, 'localtime') BETWEEN ? AND ? " + sql_footer, (datetime_to_date(start_date), datetime_to_date(end_date),))
+    else:
+        res = cur.execute(sql + " WHERE date(timestamp, 'localtime') >= ? " +  sql_footer, (datetime_to_date(start_date),))
 
     results = res.fetchall()
-    kill_summary_list = results
+    kill_summary_list = [] 
     for row in results:
         player_id, kill_count = row
         kill_summary_list.append(KILL_SUMMARY(player_id, kill_count))
