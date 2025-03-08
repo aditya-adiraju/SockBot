@@ -1,5 +1,5 @@
 from config import GUILD_IDS, YOU_HAVE_NO_ENEMIES
-from database import create_db_connection, get_target_info, get_player_info, eliminate_player
+from database import create_db_connection, get_target_info, get_player_info, eliminate_player, undo_last_kill, roll_back_kills_to_id
 from discord.ext import commands
 from discord import Permissions, TextChannel
 from discord.commands import option
@@ -49,11 +49,40 @@ class Admin(commands.Cog):
     async def sock_player(self, ctx: discord.ApplicationContext, player_discord_id: str):
         con = create_db_connection()
         if (player_info := get_player_info(con, player_discord_id)) is None:
-            await ctx.respond(f"No such player exists: `@{player_discord_id}`")
+            await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
             return
         player_name, _, _ = player_info
-        eliminate_player(con, player_discord_id)
-        await ctx.respond(f"{player_name} has been socked!")
+        kill_id = eliminate_player(con, player_discord_id)
+
+        await ctx.respond(f"{player_name} has been socked! (kill ID: {kill_id})")
+
+    @admin.command(name="undo-last-kill", description="(admin) Undoes last kill in the game")
+    @discord.default_permissions(administrator=True)
+    @option("are_you_really_sure", description="YES/NO (this action is irreversible!)")
+    async def admin_undo_last_kill(self, ctx: discord.ApplicationContext, are_you_really_sure: str):
+        if are_you_really_sure != "YES":
+            await ctx.respond(f"you're not sure enough about this!, say YES or NO", ephemeral=True)
+            return
+
+        kill_info = undo_last_kill()
+        if kill_info is None:
+            await ctx.respond(f"No kills left to undo!", ephemeral=True)
+            return
+
+        kill_id, player_discord_id, eliminated_discord_id = kill_info
+        await ctx.respond(f"`kill_id` {kill_id} has been Undone! (`@{player_discord_id}`'s elimination of `@{eliminated_discord_id}`)")
+
+    @admin.command(name="rollback-kills", description="(admin) Undoes last kill in the game")
+    @discord.default_permissions(administrator=True)
+    @option("rollback_id", type=int, description="Kill ID to rollback to")
+    @option("are_you_really_sure", description="YES/NO (this action is irreversible!)")
+    async def admin_undo_last_kill(self, ctx: discord.ApplicationContext, rollback_id: int, are_you_really_sure: str):
+        if are_you_really_sure != "YES":
+            await ctx.respond(f"you're not sure enough about this!, say YES or NO", ephemeral=True)
+            return
+
+        reversed_kills = roll_back_kills_to_id(rollback_id)
+        await ctx.respond(f"{reversed_kills} kills have been rolled back")
 
 def setup(bot):
     bot.add_cog(Admin(bot))
