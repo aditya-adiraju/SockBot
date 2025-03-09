@@ -1,8 +1,10 @@
 import sqlite3
 import csv
+from datetime import datetime
 from typing import Literal
 from logger import info, debug, error
 
+from model import *
 
 DATABASE_PATH = 'sockwars.db'
 
@@ -299,6 +301,169 @@ def roll_back_kills_to_id(rollback_id: int) -> int:
     finally:
         cur.close()
         con.close() 
+
+
+def get_all_kills(con: sqlite3.Connection) -> list[KILL_ENTRY]: 
+    """Get all the kills from the game. 
+    
+    Return: 
+        A list of all the kills.
+    """
+    cur = con.cursor()
+    res = cur.execute("SELECT id, player_discord_id, target_discord_id, datetime(timestamp, 'localtime') FROM kill_log")
+    results = res.fetchall()
+    kills = []
+    for result in results:
+        kill_id, player_discord_id, eliminated_discord_id, timestamp = result
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        kills.append(KILL_ENTRY(kill_id, player_discord_id, eliminated_discord_id, timestamp))
+
+    return kills
+
+def get_kills_on_date(con: sqlite3.Connection, date: datetime) -> list[KILL_ENTRY]: 
+    """Get all the kills from the game on specified Date
+
+    Args:
+        con: database connection
+        date: date to retrieve kills 
+
+    Return: 
+        A list of all the kills on the specified date
+    """
+    return get_kills_between_dates(con, date, date)
+
+def get_kills_between_dates(con: sqlite3.Connection, start_date: datetime, end_date: datetime | None = None) -> list[KILL_ENTRY]: 
+    """Get all the kills from the game between specified Dates
+
+    Args:
+        con: database connection
+        start_date: Start date (inclusive)
+        end_date: end date (inclusive) if None (default), function returns all kills from `start_date`
+
+    Return: 
+        A list of all the kills between specified dates
+    """
+    cur = con.cursor()
+    datetime_to_date = lambda d : d.strftime("%Y-%m-%d")
+    sql_start = "SELECT id, player_discord_id, target_discord_id, datetime(timestamp, 'localtime') FROM kill_log "
+    if end_date:
+        res = cur.execute(sql_start  + " WHERE date(timestamp, 'localtime') BETWEEN ? AND ?", (datetime_to_date(start_date), datetime_to_date(end_date),))
+    else:
+        res = cur.execute(sql_start + " WHERE date(timestamp, 'localtime') >= ?", (datetime_to_date(start_date),))
+
+    results = res.fetchall()
+    kills = []
+    for result in results:
+        kill_id, player_discord_id, eliminated_discord_id, timestamp = result
+        timestamp = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+        kills.append(KILL_ENTRY(kill_id, player_discord_id, eliminated_discord_id, timestamp))
+
+    return kills
+
+
+def get_top_kills(con: sqlite3.Connection, ) -> list[KILL_SUMMARY]:
+    """ Get a roll up of the players and their kill count.
+
+    Args:
+        con: database connectin
+    
+    Returns:
+        a list of kill summary (player ID, number of kills)
+    """
+    cur = con.cursor()
+    res = cur.execute("""
+    SELECT player_discord_id, count(player_discord_id) as kill_count FROM kill_log
+    GROUP BY player_discord_id
+    ORDER BY kill_count DESC
+    """)
+    results = res.fetchall()
+    kill_summary_list = []
+    for row in results:
+        player_id, kill_count = row
+        kill_summary_list.append(KILL_SUMMARY(player_id, kill_count))
+
+    return kill_summary_list
+
+def get_top_kills_between_dates(con: sqlite3.Connection, start_date: datetime, end_date: datetime | None = None) -> list[KILL_SUMMARY]: 
+    """ Get a roll up of the players and their kill count between two dates
+
+    Args:
+        con: database connection
+        start_date: Start date (inclusive)
+        end_date: end date (inclusive) if None (default), function returns all kills from `start_date`
+    
+    Returns:
+        a list of kill summary (player ID, number of kills) between start and end dates
+    """
+
+    datetime_to_date = lambda d : d.strftime("%Y-%m-%d")
+    cur = con.cursor()
+    sql = "SELECT player_discord_id, count(player_discord_id) as kill_count FROM kill_log "
+
+    sql_footer = """
+    GROUP BY player_discord_id
+    ORDER BY kill_count DESC
+    """ 
+
+    if end_date:
+        res = cur.execute(sql + " WHERE date(timestamp, 'localtime') BETWEEN ? AND ? " + sql_footer, (datetime_to_date(start_date), datetime_to_date(end_date),))
+    else:
+        res = cur.execute(sql + " WHERE date(timestamp, 'localtime') >= ? " +  sql_footer, (datetime_to_date(start_date),))
+
+    results = res.fetchall()
+    kill_summary_list = [] 
+    for row in results:
+        player_id, kill_count = row
+        kill_summary_list.append(KILL_SUMMARY(player_id, kill_count))
+
+    return kill_summary_list
+
+def get_top_kills_on_date(con: sqlite3.Connection, date: datetime) -> list[KILL_SUMMARY]:
+    """Get the top kills from the game on specified Date
+
+    Args:
+        con: database connection
+        date: date to retrieve kills 
+
+    Return: 
+        A list of all players who have a kill and their kill count on the specified date
+    """
+    return get_top_kills_between_dates(con, date, date)
+
+
+def get_all_players(con: sqlite3.Connection) -> list[PLAYER]:
+    """Returns a list of all players
+
+    Args:
+        con: database connection
+    """
+    cur = con.cursor()
+    res = cur.execute("SELECT *, EXISTS(SELECT 1 FROM kill_log WHERE target_discord_id = player_info.discord_id) as eliminated FROM player_info")
+    results = res.fetchall()
+
+    player_list = []
+    for row in results:
+        discord_id, player_name, group_name, secret_word, eliminated = row
+        eliminated = bool(not eliminated)  
+        player_list.append(PLAYER(discord_id, player_name, group_name, secret_word, eliminated))
+    
+    return player_list
+
+def get_target_assignments(con: sqlite3.Connection) -> list[TARGET_ASSIGNMENT]:
+    """Returns a list of all target assignments.
+
+    Args:
+        con: database connection
+    """
+    cur = con.cursor()
+    res = cur.execute("SELECT * FROM target_assignments")
+    results = res.fetchall()
+
+    assignment_list = []
+    for row in results:
+        assignment_list.append(TARGET_ASSIGNMENT(*row))
+    
+    return assignment_list 
 
 def create_db_connection(\
             isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",
