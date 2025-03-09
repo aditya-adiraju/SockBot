@@ -1,0 +1,6 @@
+*log.txt
+*.db
+*.csv
+.venv/
+__pycache__/
+data/

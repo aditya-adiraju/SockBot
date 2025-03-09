@@ -1,0 +1,6 @@
+services:
+  sockbot:
+    build: .
+    volumes:
+      - ./data:/sockbot/data
+    restart: always

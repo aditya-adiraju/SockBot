@@ -95,11 +95,11 @@ class Admin(commands.Cog):
         try:
             message = await ctx.fetch_message(int(message_id))
             attachment = await message.attachments[0].read()
-            with open(f'{message_id}.csv', 'wb') as f:
+            with open(f'./data/{message_id}.csv', 'wb') as f:
                 f.write(attachment)
 
             con = create_db_connection()
-            add_initial_data(con, f'{message_id}.csv')
+            add_initial_data(con, f'./data/{message_id}.csv')
             await ctx.respond(f"Game data has been retrieved from {message_id}")
         except:
             await ctx.respond("Something went wrong with this....", ephemeral=True)
