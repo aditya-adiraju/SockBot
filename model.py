@@ -12,7 +12,7 @@ class PLAYER:
         self.eliminated = eliminated 
 
     def __str__(self):
-        return f"{self.player_id:<20}{self.player_name:<30}{self.group_name:<15}{self.secret_word:<15}{self.eliminated}"
+        return f"{self.player_id:<20}{self.player_name:<30}{self.group_name:<15}{"[REDACT]":<15}{self.eliminated}"
 class TARGET_ASSIGNMENT:
     HEADER = f"{"player_id":<20}{"target_id":<20}"
     def __init__(self, player_discord_id: str, target_discord_id: str):

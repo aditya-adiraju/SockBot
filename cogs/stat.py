@@ -1,6 +1,6 @@
 
 from config import GUILD_IDS, YOU_HAVE_NO_ENEMIES
-from database import create_db_connection, get_target_info, get_player_info, eliminate_player, undo_last_kill, roll_back_kills_to_id, get_kills_on_date, get_all_kills, get_kills_between_dates, get_top_kills, get_top_kills_between_dates, get_top_kills_on_date
+from database import *
 from discord.ext import commands
 from discord import Permissions, TextChannel
 from discord.commands import option
@@ -55,7 +55,7 @@ class Stat(commands.Cog):
     @stat.command(name="weekly-kills", description="(stat) Get all kills between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
-    async def all_kills(self, ctx: discord.ApplicationContext, start_date: str, end_date: str = ""):
+    async def weekly_kills(self, ctx: discord.ApplicationContext, start_date: str, end_date: str = ""):
         con = create_db_connection()
         try:
             start_date = datetime.strptime(start_date.strip(), '%Y-%m-%d')
@@ -80,7 +80,7 @@ class Stat(commands.Cog):
     @stat.command(name="top-weekly-kills", description="(stat) Get a list of top players between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
-    async def all_kills(self, ctx: discord.ApplicationContext, start_date: str, end_date: str = ""):
+    async def top_weekly_kills(self, ctx: discord.ApplicationContext, start_date: str, end_date: str = ""):
         con = create_db_connection()
         try:
             start_date = datetime.strptime(start_date.strip(), '%Y-%m-%d')
@@ -95,7 +95,7 @@ class Stat(commands.Cog):
 
     @stat.command(name="top-daily-kills", description="(stat) Get a list of top players on a date (defualt today)")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
-    async def daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
+    async def top_daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
         con = create_db_connection()
         try:
             if date.strip() == '': 
@@ -109,6 +109,22 @@ class Stat(commands.Cog):
         kills = get_top_kills_on_date(con, date)
         kill_message = _table_to_message(kills, KILL_SUMMARY.HEADER)
         await ctx.respond(kill_message)
+
+
+    @stat.command(name="all-players", description="(stat) Get a list of all players")
+    async def all_players(self, ctx: discord.ApplicationContext):
+        con = create_db_connection()
+        player_summary = get_all_players(con)
+        message = _table_to_message(player_summary, PLAYER.HEADER)
+        await ctx.respond(message)
+
+    @stat.command(name="target-assignments", description="(stat) Get a list of all target assignments")
+    @discord.default_permissions(administrator=True)
+    async def all_target_assignments(self, ctx: discord.ApplicationContext):
+        con = create_db_connection()
+        assignment_summary = get_target_assignments(con)
+        message = _table_to_message(assignment_summary, TARGET_ASSIGNMENT.HEADER)
+        await ctx.respond(message, ephemeral=True)
 
 def setup(bot):
     bot.add_cog(Stat(bot))
