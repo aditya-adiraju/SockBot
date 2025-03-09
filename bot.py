@@ -1,6 +1,6 @@
 import discord
 from database import get_target_info, create_db_connection, db_setup, add_initial_data , get_player_info, eliminate_player
-from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES
+from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES, ITS_JOEVER
 from logger import error, info, debug 
 bot = discord.Bot()
 
@@ -16,14 +16,16 @@ async def rules(ctx: discord.ApplicationContext):
 
 @bot.slash_command(guild_ids=GUILD_IDS, name="get-target", description="Tells you who your Target is")
 async def target(ctx: discord.ApplicationContext):
+    WIN_MESSAGE = f"# You win! \nyou have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}"
+    LOSE_MESSAGE = f"# You've been eliminated! \n\n\n{ITS_JOEVER}"
     player_discord_id = ctx.author.name
     con = create_db_connection()
     if (target_info := get_target_info(con, player_discord_id)) is None:
-        await ctx.respond(f"You have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}", ephemeral=True)
+        await ctx.respond(LOSE_MESSAGE, ephemeral=True)
         return
     target_id, target_name, group_name, _ = target_info
     if target_id == player_discord_id:
-        await ctx.respond(f"# You win! \nyou have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}", ephemeral=True)
+        await ctx.respond(WIN_MESSAGE, ephemeral=True)
         return
     await ctx.respond(f"Your target is {target_name} (discord: `@{target_id}`) from {group_name}", ephemeral=True)
 
