@@ -6,7 +6,7 @@ from logger import info, debug, error
 
 from model import *
 
-DATABASE_PATH = 'sockwars.db'
+DATABASE_PATH = './data/sockwars.db'
 
 def ingest_csv(filename: str) -> list[tuple[str]]:
     """ Returns the CSV data from `filename` in the right format to insert to sqlite3
