@@ -40,6 +40,7 @@ def db_setup(con: sqlite3.Connection):
                     secret_word TEXT NOT NULL
                 )
                 """)
+
     debug(f'Created table player_info successfully.')
 
     cur.execute("""
@@ -74,7 +75,7 @@ def add_initial_data(con: sqlite3.Connection, csv_source_filename: str):
     """
 
     table_data = ingest_csv(csv_source_filename)
-    print(table_data)
+    debug(table_data)
     player_info_data = [(r[0], r[1], r[2], r[4]) for r in table_data]
     target_assignments_data = [(r[0], r[3]) for r in table_data]
     cur = con.cursor()
@@ -444,7 +445,7 @@ def get_all_players(con: sqlite3.Connection) -> list[PLAYER]:
     player_list = []
     for row in results:
         discord_id, player_name, group_name, secret_word, eliminated = row
-        eliminated = bool(not eliminated)  
+        eliminated = bool(eliminated)  
         player_list.append(PLAYER(discord_id, player_name, group_name, secret_word, eliminated))
     
     return player_list
@@ -464,6 +465,14 @@ def get_target_assignments(con: sqlite3.Connection) -> list[TARGET_ASSIGNMENT]:
         assignment_list.append(TARGET_ASSIGNMENT(*row))
     
     return assignment_list 
+
+def delete_all_data(con: sqlite3.Connection):
+    cur = con.cursor()
+    cur.execute('DELETE FROM player_info')
+    cur.execute('DELETE FROM target_assignments')
+    cur.execute('DELETE FROM kill_log')
+    con.commit()
+    
 
 def create_db_connection(\
             isolation_level: Literal["DEFERRED", "EXCLUSIVE", "IMMEDIATE"] | None = "DEFERRED",

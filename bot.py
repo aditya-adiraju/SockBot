@@ -60,12 +60,13 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
         await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
                           """, ephemeral=True)
 
+
+
 def setup():
     con = create_db_connection()
     db_setup(con)
-    add_initial_data(con, 'sockwars_initial_data.csv')
 
-#setup()
+setup()
 bot.load_extension('cogs.admin')
 bot.load_extension('cogs.stat')
 bot.run(TOKEN)
