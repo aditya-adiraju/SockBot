@@ -75,7 +75,7 @@ def add_initial_data(con: sqlite3.Connection, csv_source_filename: str):
     """
 
     table_data = ingest_csv(csv_source_filename)
-    print(table_data)
+    debug(table_data)
     player_info_data = [(r[0], r[1], r[2], r[4]) for r in table_data]
     target_assignments_data = [(r[0], r[3]) for r in table_data]
     cur = con.cursor()
