@@ -1,5 +1,5 @@
 from config import GUILD_IDS, YOU_HAVE_NO_ENEMIES
-from database import create_db_connection, get_target_info, get_player_info, eliminate_player, undo_last_kill, roll_back_kills_to_id
+from database import *
 from discord.ext import commands
 from discord import Permissions, TextChannel
 from discord.commands import option
@@ -83,6 +83,42 @@ class Admin(commands.Cog):
 
         reversed_kills = roll_back_kills_to_id(rollback_id)
         await ctx.respond(f"{reversed_kills} kills have been rolled back")
+
+    @admin.command(guild_ids=GUILD_IDS, name="ingest-csv", description="(admin) Add initial game data from CSV")
+    @discord.default_permissions(administrator=True)
+    @option("are_you_really_sure", description="YES/NO (this action is irreversible!)", )
+    @option("m_id", description="Message ID")
+    async def admin_ingest_csv(self, ctx: discord.ApplicationContext, message_id: str, are_you_really_sure: str):
+        if are_you_really_sure != "YES":
+            await ctx.respond(f"you're not sure enough about this!, say YES or NO", ephemeral=True)
+            return
+        try:
+            message = await ctx.fetch_message(int(message_id))
+            attachment = await message.attachments[0].read()
+            with open(f'{message_id}.csv', 'wb') as f:
+                f.write(attachment)
+
+            con = create_db_connection()
+            add_initial_data(con, f'{message_id}.csv')
+            await ctx.respond(f"Game data has been retrieved from {message_id}")
+        except:
+            await ctx.respond("Something went wrong with this....", ephemeral=True)
+
+    @admin.command(guild_ids=GUILD_IDS, name="delete-game-data", description="(admin) [**DONT TOUCH. BREAK GLASS**] Remove all rows in database")
+    @discord.default_permissions(administrator=True)
+    @option("are_you_really_sure", description="YES/NO (this action is irreversible!)", )
+    @option("actually_sure", description="actually sure?")
+    async def admin_ingest_csv(self, ctx: discord.ApplicationContext, are_you_really_sure: str, actually_sure: str):
+        if are_you_really_sure != "YES" and actually_sure != "YES":
+            await ctx.respond(f"you're not sure enough about this!, say YES or NO", ephemeral=True)
+            return
+        try:
+            con = create_db_connection()
+            delete_all_data(con)
+            await ctx.respond("Done!")
+        except:
+            await ctx.respond("Something went wrong with this....", ephemeral=True)
+
 
 def setup(bot):
     bot.add_cog(Admin(bot))
