@@ -33,7 +33,7 @@ jobs:
 
       - name: Push container to GCR
         run: |
-          docker tag sockbot:latest  us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:latest
-          docker tag sockbot:latest  us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:${{ GITHUB.SHA }}
-          docker push us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCE_ARTIFACT_REPO }}}/sockbot:latest
-          docker push us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCE_ARTIFACT_REPO }}}/sockbot:${{ GITHUB.SHA }}
+          docker tag sockbot:latest "us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:latest"
+          docker tag sockbot:latest "us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:${{ GITHUB.SHA }}"
+          docker push "us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCE_ARTIFACT_REPO }}}/sockbot:latest"
+          docker push "us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCE_ARTIFACT_REPO }}}/sockbot:${{ GITHUB.SHA }}"
