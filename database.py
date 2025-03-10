@@ -483,6 +483,7 @@ def set_player_secret_word(con: sqlite3.Connection, player_discord_id: str, new_
         return None
     _, _, secret_word = player_info 
     cur.execute("UPDATE player_info SET secret_word = ? WHERE discord_id = ?", (new_secret_word.strip(), player_discord_id.strip()))
+    con.commit()
     info(f"Updated {player_discord_id}'s secret word from {secret_word} to {new_secret_word}")
     return secret_word
 
