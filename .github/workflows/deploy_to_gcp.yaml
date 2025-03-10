@@ -5,7 +5,7 @@ on:
     branches:
       - main
 env:
-  PROJECT_ID: ${{ secrets.GCE_PROJECT }}
+  PROJECT_name: ${{ secrets.GCE_PROJECT }}
   GCE_INSTANCE: ${{ secrets.GCE_INSTANCE }}
   GCE_INSTANCE_ZONE: ${{ secrets.GCE_ZONE }}
 
@@ -15,23 +15,23 @@ jobs:
     runs-on: ubuntu-latest
   
     steps:
-      - id: Checkout
+      - name: Checkout
         uses: actions/checkout@v4
       
-      - id: gcloud auth
+      - name: gcloud auth
         uses: 'google-github-actions/auth@v2'
         with:
           credentials_json: '${{ secrets.GCE_SA_KEY }}'
           
-      - id: Build docker container
+      - name: Build docker container
         run: |
           docker build -t sockbot:latest .
 
-      - id: set up gcloud Docker configuration 
+      - name: set up gcloud Docker configuration 
         run: |
           gcloud auth configure-docker --quiet
 
-      - id: Push container to GCR
+      - name: Push container to GCR
         run: |
           docker tag sockbot:latest  gcr.io/${{ secrets.GCE_PROJECT }}/sockbot:latest
           docker tag sockbot:latest  gcr.io/${{ secrets.GCE_PROJECT }}/sockbot:${{ GITHUB.SHA }}
