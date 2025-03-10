@@ -20,12 +20,12 @@ class Admin(commands.Cog):
         con = create_db_connection()
         player_info = get_player_info(con, player_discord_id)
         if player_info is None:
-            await ctx.respond(f"No Player associated with {player_discord_id}")
+            await ctx.respond(f"No Player associated with {player_discord_id}", ephemeral=True)
             return
         player_name, _, _ = player_info
         target_info = get_target_info(con, player_discord_id)
         if target_info is None:
-            await ctx.respond(f"No target associated with {player_discord_id}")
+            await ctx.respond(f"No target associated with {player_discord_id}", ephemeral=True)
         else:
             target_id, target_name, group_name, secret_word = target_info
             await ctx.respond(f"{player_name}'s target is {target_name} (discord: `@{target_id}`) from {group_name}", ephemeral=True)
@@ -38,7 +38,7 @@ class Admin(commands.Cog):
         con = create_db_connection()
         player_info = get_player_info(con, player_discord_id)
         if player_info is None:
-            await ctx.respond(f"No Player associated with {player_discord_id}")
+            await ctx.respond(f"No Player associated with {player_discord_id}", ephemeral=True)
         else:
             player_name, _, secret_word = player_info
             await ctx.respond(f"{player_name}'s secret word is ||{secret_word}||", ephemeral=True)
@@ -119,6 +119,19 @@ class Admin(commands.Cog):
         except:
             await ctx.respond("Something went wrong with this....", ephemeral=True)
 
+    @admin.command(name="reset-secret", description="(admin) Reset a given player's secret word")
+    @discord.default_permissions(administrator=True)
+    @option("player_discord_id", description="The player's discord id")
+    @option("new_secret_word", description="The new secret word")
+    async def admin_reset_secret(self, ctx: discord.ApplicationContext, player_discord_id: str, new_secret_word: str):
+        
+        con = create_db_connection()
+        old_secret_word = set_player_secret_word(con, player_discord_id, new_secret_word)
+        if old_secret_word is None:
+            await ctx.respond(f"No Player associated with {player_discord_id}", ephemeral=True)
+            return
+        else:
+            await ctx.respond(f"{player_discord_id}'s secret word has been changed to ||{new_secret_word}|| (from ||{old_secret_word}||)", ephemeral=True)
 
 def setup(bot):
     bot.add_cog(Admin(bot))

@@ -116,7 +116,8 @@ class Stat(commands.Cog):
         await ctx.respond(kill_message)
 
 
-    @stat.command(name="all-players", description="(stat) Get a list of all players")
+    @stat.command(name="all-players", description="(stat) Get a list of all player and their elimination status.")
+    @discord.default_permissions(administrator=True)
     async def all_players(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
         player_summary = get_all_players(con)
