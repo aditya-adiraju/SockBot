@@ -8,6 +8,17 @@ bot = discord.Bot()
 async def on_ready():
     info(f"{bot.user} is ready and online!")
 
+@bot.event
+async def on_application_command_error(ctx: discord.ApplicationContext, err: Exception):
+    await ctx.respond("Something went wrong... Ask an admin", ephemeral=True)
+    err_msg = error(f"{type(err)=} {str(err)=}")
+    channel = bot.get_channel(ERROR_CHANNEL_ID)
+    if channel:
+        await channel.send(f"```\n{err_msg}\n```")
+    else:
+        error(f"ERROR channel not found {ERROR_CHANNEL_ID}")
+    raise err
+
 @bot.slash_command(guild_ids=GUILD_IDS, name="rules", description="The rules of the competition!")
 async def rules(ctx: discord.ApplicationContext):
     with open('rules.md') as f:
@@ -60,17 +71,6 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
     else:
         await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
                           """, ephemeral=True)
-@bot.event
-async def on_application_command_error(ctx: discord.ApplicationContext, err: Exception):
-    await ctx.respond("Something went wrong... Ask an admin", ephemeral=True)
-    err_msg = error(f"{type(err)=} {str(err)=}")
-    channel = bot.get_channel(ERROR_CHANNEL_ID)
-    if channel:
-        await channel.send(f"```\n{err_msg}\n```")
-    else:
-        error(f"ERROR channel not found {ERROR_CHANNEL_ID}")
-    raise err
-
 
 def setup():
     con = create_db_connection()
