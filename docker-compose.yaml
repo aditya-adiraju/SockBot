@@ -2,5 +2,7 @@ services:
   sockbot:
     build: .
     volumes:
-      - ./data:/sockbot/data
+      - ./data:/home/sockie/sockbot/data
     restart: always
+    security_opt:
+      - no-new-privileges:true
