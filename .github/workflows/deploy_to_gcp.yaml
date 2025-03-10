@@ -23,23 +23,15 @@ jobs:
         with:
           credentials_json: '${{ secrets.GCE_SA_KEY }}'
           
-      - id: set up docker configuration 
+      - id: Build docker container
         run: |
-          gcloud auth configure-docker us-west1-docker.pkg.dev
+          docker build -t sockbot:latest .
 
-      - id: Build and push Docker image
+      - id: set up gcloud Docker configuration 
         run: |
-          docker compose -f docker-compose.yml build sockbot
-          docker compose -f docker-compose.yml push sockbot
+          gcloud auth configure-docker --quiet
 
-      - id: 'compute-ssh'
-        uses: 'google-github-actions/ssh-compute@v1'
-        with:
-          instance_name: 'example-instance'
-          zone: ${{ secrets.GCE_ZONE }}
-          ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
-          script: |
-            cd /home/sockie/sockbot
-            docker compose down
-            docker compose pull
-            docker compose up -d
+      - id: Push container to GCR
+        run: |
+          docker tag sockbot:latest  gcr.io/${{ secrets.GCE_PROJECT }}/sockbot:latest
+          docker tag sockbot:latest  gcr.io/${{ secrets.GCE_PROJECT }}/sockbot:${{ GITHUB.SHA }}
