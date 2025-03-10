@@ -362,7 +362,7 @@ def get_kills_between_dates(con: sqlite3.Connection, start_date: datetime, end_d
     return kills
 
 
-def get_top_kills(con: sqlite3.Connection, ) -> list[KILL_SUMMARY]:
+def get_top_kills(con: sqlite3.Connection ) -> list[KILL_SUMMARY]:
     """ Get a roll up of the players and their kill count.
 
     Args:
@@ -465,6 +465,26 @@ def get_target_assignments(con: sqlite3.Connection) -> list[TARGET_ASSIGNMENT]:
         assignment_list.append(TARGET_ASSIGNMENT(*row))
     
     return assignment_list 
+
+def set_player_secret_word(con: sqlite3.Connection, player_discord_id: str, new_secret_word: str) -> str | None:
+    """set a player's secret word
+
+    Args:
+        con: database connection
+        player_discord_id: The player's discord Id
+        new_secret_word: The new secret word associated with the player
+
+    Returns:
+        the old secret word or None if the player does not exist
+    """
+    cur = con.cursor()
+    player_info = get_player_info(con, player_discord_id.strip())
+    if player_info is None:
+        return None
+    _, _, secret_word = player_info 
+    cur.execute("UPDATE player_info SET secret_word = ? WHERE discord_id = ?", (new_secret_word.strip(), player_discord_id.strip()))
+    info(f"Updated {player_discord_id}'s secret word from {secret_word} to {new_secret_word}")
+    return secret_word
 
 def delete_all_data(con: sqlite3.Connection):
     cur = con.cursor()
