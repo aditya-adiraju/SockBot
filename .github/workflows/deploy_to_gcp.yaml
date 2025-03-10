@@ -1,0 +1,54 @@
+name: Build and Deploy Discord Bot to Google Compute Engine
+
+on:
+  push:
+    branches:
+      - main
+env:
+  PROJECT_name: ${{ secrets.GCE_PROJECT }}
+  GCE_INSTANCE: ${{ secrets.GCE_INSTANCE }}
+  GCE_INSTANCE_ZONE: ${{ secrets.GCE_ZONE }}
+
+jobs:
+  setup-build-push-deploy:
+    name: Setup build push and deploy
+    runs-on: ubuntu-latest
+  
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: gcloud auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          credentials_json: '${{ secrets.GCE_SA_KEY }}'
+          
+      - name: Build docker container
+        run: |
+          docker build -t sockbot:latest .
+
+      - name: set up gcloud Docker configuration 
+        run: |
+          gcloud auth configure-docker --quiet us-west1-docker.pkg.dev 
+
+      - name: Push container to GCR
+        run: |
+          docker tag sockbot:latest  us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:latest
+          docker tag sockbot:latest  us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:${{ GITHUB.SHA }}
+          docker push us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:latest
+          docker push us-west1-docker.pkg.dev/${{ secrets.GCE_PROJECT }}/${{ secrets.GCP_ARTIFACT_REPO }}/sockbot:${{ GITHUB.SHA }}
+
+
+      - name: Deploy new image on Compute Engine Instance
+        uses: 'google-github-actions/ssh-compute@v1'
+        with:
+          instance_name: ${{ secrets.GCE_INSTANCE }}
+          zone: us-west1-a
+          ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
+          user: ${{ secrets.GCP_USER }}
+          script:  "${{ github.workspace }}/restart.sh"
+
+      - name: Output ssh log
+        run: |-
+          echo '${{ steps.ssh.outputs.stdout }}'
+          echo '${{ steps.ssh.outputs.stderr }}'
