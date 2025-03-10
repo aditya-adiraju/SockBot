@@ -1,6 +1,6 @@
 import discord
-from database import get_target_info, create_db_connection, db_setup, add_initial_data , get_player_info, eliminate_player
-from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES, ITS_JOEVER
+from database import *
+from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES, ITS_JOEVER, ERROR_CHANNEL_ID
 from logger import error, info, debug 
 bot = discord.Bot()
 
@@ -52,6 +52,7 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
         return
     target_id, target_name, _, target_secret_word = target_info
 
+    print(target_info)
     if target_secret_word.strip().lower() == secret_word.strip().lower():
         kill_id = eliminate_player(con, target_id)
         await ctx.send(f"{player_name} has successfully eliminated {target_name}! (kill ID: {kill_id})")
@@ -59,7 +60,16 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
     else:
         await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
                           """, ephemeral=True)
-
+@bot.event
+async def on_application_command_error(ctx: discord.ApplicationContext, err: Exception):
+    await ctx.respond("Something went wrong... Ask an admin", ephemeral=True)
+    err_msg = error(f"{type(err)=} {str(err)=}")
+    channel = bot.get_channel(ERROR_CHANNEL_ID)
+    if channel:
+        await channel.send(f"```\n{err_msg}\n```")
+    else:
+        error(f"ERROR channel not found {ERROR_CHANNEL_ID}")
+    raise err
 
 
 def setup():
