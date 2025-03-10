@@ -12,6 +12,7 @@ GUILD_ID = int(os.environ['GUILD_ID'])
 
 # Convenience variable...
 GUILD_IDS = [GUILD_ID]
+ERROR_CHANNEL_ID = int(os.environ['ERROR_CHANNEL_ID'])
 
 YOU_HAVE_NO_ENEMIES="https://imgur.com/F628Puf"
 ITS_JOEVER='https://imgur.com/7tk1NT8'
