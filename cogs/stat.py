@@ -17,7 +17,12 @@ def _table_to_message(table_data, header):
     table.extend([str(row) for row in table_data])
     table_contents = ('\n'.join(table))[-1875:]
     message = f"```\n{table_contents}\n```"
-
+    data = '\n'.join(table)
+    while len(data) > 1875:
+        table = [f"{header.upper()}"]
+        table.extend([str(row) for row in table_data])
+        table_contents = ('\n'.join(table))[-1875:]
+        message = f"```\n{table_contents}\n```"
     return message
 
 class Stat(commands.Cog):

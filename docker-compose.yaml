@@ -1,6 +1,10 @@
 services:
   sockbot:
-    build: .
+    image:  us-west1-docker.pkg.dev/aca-sockbot/aca-sockbot-docker-repo/sockbot:latest
+    container_name: sockbot-app
     volumes:
-      - ./data:/sockbot/data
+      - ./data:/home/sockie/sockbot/data
+      - .env:/home/sockie/sockbot/.env
     restart: always
+    security_opt:
+      - no-new-privileges:true

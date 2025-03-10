@@ -4,3 +4,5 @@
 .venv/
 __pycache__/
 data/
+# Ignore generated credentials from google-github-actions/auth
+gha-creds-*.json
