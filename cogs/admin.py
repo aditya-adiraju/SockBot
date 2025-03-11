@@ -12,7 +12,7 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-target", description="(admin) Get a given player's target")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def admin_get_target(self, ctx: discord.ApplicationContext, player_discord_id: str):
+    async def admin_target(self, ctx: discord.ApplicationContext, player_discord_id: str):
         player_discord_id = player_discord_id.strip()
         con = create_db_connection()
         player_info = get_player_info(con, player_discord_id)
@@ -30,7 +30,7 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-secret-word", description="(admin) Get a given player's secret word")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def admin_get_secret(self, ctx: discord.ApplicationContext, player_discord_id: str):
+    async def admin_secret_word(self, ctx: discord.ApplicationContext, player_discord_id: str):
         player_discord_id = player_discord_id.strip()
         con = create_db_connection()
         player_info = get_player_info(con, player_discord_id)
@@ -43,7 +43,7 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-sock", description="(admin) Eliminate a player")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def sock_player(self, ctx: discord.ApplicationContext, player_discord_id: str):
+    async def admin_sock(self, ctx: discord.ApplicationContext, player_discord_id: str):
         con = create_db_connection()
         if (player_info := get_player_info(con, player_discord_id)) is None:
             await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
@@ -73,7 +73,7 @@ class Admin(commands.Cog):
     @discord.default_permissions(administrator=True)
     @option("rollback_id", type=int, description="Kill ID to rollback to")
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)")
-    async def admin_undo_last_kill(self, ctx: discord.ApplicationContext, rollback_id: int, are_you_really_sure: str):
+    async def admin_rollback_kills(self, ctx: discord.ApplicationContext, rollback_id: int, are_you_really_sure: str):
         if are_you_really_sure != "YES":
             await ctx.respond(f"you're not sure enough about this!, say YES or NO", ephemeral=True)
             return
@@ -105,7 +105,7 @@ class Admin(commands.Cog):
     @discord.default_permissions(administrator=True)
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)", )
     @option("actually_sure", description="actually sure?")
-    async def admin_ingest_csv(self, ctx: discord.ApplicationContext, are_you_really_sure: str, actually_sure: str):
+    async def admin_delete_game_data(self, ctx: discord.ApplicationContext, are_you_really_sure: str, actually_sure: str):
         if are_you_really_sure != "YES" and actually_sure != "YES":
             await ctx.respond(f"you're not sure enough about this!, say YES or NO", ephemeral=True)
             return
