@@ -76,8 +76,8 @@ def add_initial_data(con: sqlite3.Connection, csv_source_filename: str):
 
     table_data = ingest_csv(csv_source_filename)
     debug(table_data)
-    player_info_data = [(r[0], r[1], r[2], r[4]) for r in table_data]
-    target_assignments_data = [(r[0], r[3]) for r in table_data]
+    player_info_data = [(r[0].strip(), r[1].strip(), r[2].strip(), r[4].strip()) for r in table_data]
+    target_assignments_data = [(r[0].strip(), r[3].strip()) for r in table_data]
     cur = con.cursor()
 
     cur.executemany("""INSERT OR REPLACE INTO player_info 
