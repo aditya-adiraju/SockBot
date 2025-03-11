@@ -508,3 +508,5 @@ def create_db_connection(\
         timeout: connection timeout threshold. 
     """
     return sqlite3.connect(DATABASE_PATH, isolation_level=isolation_level, timeout=timeout)
+
+

@@ -10,20 +10,27 @@ from model import *
 import discord
 
 
+def _split_lines(lines, N):
+    assert N > 1000
 
-def _table_to_message(table_data, header):
+    chunk = ""
+    chunks = []
+    
+    for line in lines:
+        if len(chunk) + len(line) + 1 > N:
+            chunks.append(chunk)
+            chunk = ''
+        chunk += line + '\n'
 
-    table = [f"{header.upper()}"]
-    table.extend([str(row) for row in table_data])
-    table_contents = ('\n'.join(table))[-1875:]
-    message = f"```\n{table_contents}\n```"
-    data = '\n'.join(table)
-    while len(data) > 1875:
-        table = [f"{header.upper()}"]
-        table.extend([str(row) for row in table_data])
-        table_contents = ('\n'.join(table))[-1875:]
-        message = f"```\n{table_contents}\n```"
-    return message
+    chunks.append(chunk)
+
+    return chunks
+
+def _table_to_message(table_data, header) -> list[str]:
+    table_data = [str(d) for d in table_data]
+    chunks = _split_lines(table_data, 1875)
+    messages = [f"```\n{header.upper()}\n{chunk}\n```" for chunk in chunks]
+    return messages
 
 class Stat(commands.Cog):
     def __init__(self, bot: discord.Bot):
@@ -35,8 +42,10 @@ class Stat(commands.Cog):
         
         kills = get_all_kills(con)
 
-        kill_message = _table_to_message(kills, KILL_ENTRY.HEADER)
-        await ctx.respond(kill_message)
+        kill_messages = _table_to_message(kills, KILL_ENTRY.HEADER)
+        await ctx.respond(kill_messages[0])
+        for m in kill_messages[1:]:
+            await ctx.send(m)
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-daily-kills", description="(stat)(admin) Get kills from today")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
@@ -53,8 +62,10 @@ class Stat(commands.Cog):
             return
 
         kills = get_kills_on_date(con, date)
-        kill_message = _table_to_message(kills, KILL_ENTRY.HEADER)
-        await ctx.respond(kill_message)
+        kill_messages = _table_to_message(kills, KILL_ENTRY.HEADER)
+        await ctx.respond(kill_messages[0])
+        for m in kill_messages[1:]:
+            await ctx.send(m)
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-weekly-kills", description="(stat)(admin) Get all kills between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
@@ -70,8 +81,10 @@ class Stat(commands.Cog):
             return
 
         kills = get_kills_between_dates(con, start_date, end_date)
-        kill_message = _table_to_message(kills, KILL_ENTRY.HEADER)
-        await ctx.respond(kill_message)
+        kill_messages = _table_to_message(kills, KILL_ENTRY.HEADER)
+        await ctx.respond(kill_messages[0])
+        for m in kill_messages[1:]:
+            await ctx.send(m)
     
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-kills", description="(stat) Get a rollup of overall top players ordered by their kill count")
@@ -79,8 +92,11 @@ class Stat(commands.Cog):
         con = create_db_connection()
 
         kill_summary = get_top_kills(con)
-        message = _table_to_message(kill_summary, KILL_SUMMARY.HEADER)
-        await ctx.respond(message)
+        messages = _table_to_message(kill_summary, KILL_SUMMARY.HEADER)
+
+        await ctx.respond(messages[0])
+        for m in messages[1:]:
+            await ctx.send(m)
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-weekly-kills", description="(stat)(admin) Get a list of top players between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
@@ -96,8 +112,10 @@ class Stat(commands.Cog):
             return
 
         kill_summary = get_top_kills_between_dates(con, start_date, end_date)
-        message = _table_to_message(kill_summary, KILL_SUMMARY.HEADER)
-        await ctx.respond(message)
+        messages = _table_to_message(kill_summary, KILL_SUMMARY.HEADER)
+        await ctx.respond(messages[0])
+        for m in messages[1:]:
+            await ctx.send(m)
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-daily-kills", description="(stat)(admin) Get a list of top players on a date (defualt today)")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
@@ -114,24 +132,31 @@ class Stat(commands.Cog):
             return
 
         kills = get_top_kills_on_date(con, date)
-        kill_message = _table_to_message(kills, KILL_SUMMARY.HEADER)
-        await ctx.respond(kill_message)
+        messages = _table_to_message(kills, KILL_SUMMARY.HEADER)
+
+        await ctx.respond(messages[0])
+        for m in messages[1:]:
+            await ctx.send(m)
 
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-all-players", description="(stat) Get a list of all player and their elimination status.")
     async def all_players(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
         player_summary = get_all_players(con)
-        message = _table_to_message(player_summary, PLAYER.HEADER)
-        await ctx.respond(message)
+        messages = _table_to_message(player_summary, PLAYER.HEADER)
+        await ctx.respond(messages[0])
+        for m in messages[1:]:
+            await ctx.send(m)
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-target-assignments", description="(stat)(admin) Get a list of all target assignments")
     @discord.default_permissions(administrator=True)
     async def all_target_assignments(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
         assignment_summary = get_target_assignments(con)
-        message = _table_to_message(assignment_summary, TARGET_ASSIGNMENT.HEADER)
-        await ctx.respond(message, ephemeral=True)
+        messages = _table_to_message(assignment_summary, TARGET_ASSIGNMENT.HEADER)
+        await ctx.respond(messages[0])
+        for m in messages[1:]:
+            await ctx.send(m)
 
 def setup(bot):
     bot.add_cog(Stat(bot))
