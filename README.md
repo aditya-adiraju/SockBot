@@ -25,7 +25,7 @@ The main tech stack can be broken down into the following categories:
 
 ### Fun Stuff
 - **Efficient Data Recovery (Point In Time restore):** Designed and implement an efficient method to rollback game eliminations, and assigned targets to any point in time (dictated by an elimination ID).
-- **Statiscal views**: Created several database views to effectively display table information.
+- **Statistical views**: Created several database views to effectively display table information.
 
 
 
