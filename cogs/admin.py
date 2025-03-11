@@ -9,9 +9,7 @@ class Admin(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
 
-    admin = discord.SlashCommandGroup('admin', 'Admin related commands', guild_ids=GUILD_IDS)
-
-    @admin.command(name="target", description="(admin) Get a given player's target")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-target", description="(admin) Get a given player's target")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
     async def admin_get_target(self, ctx: discord.ApplicationContext, player_discord_id: str):
@@ -29,7 +27,7 @@ class Admin(commands.Cog):
             target_id, target_name, group_name, secret_word = target_info
             await ctx.respond(f"{player_name}'s target is {target_name} (discord: `@{target_id}`) from {group_name}", ephemeral=True)
     
-    @admin.command(name="secret-word", description="(admin) Get a given player's secret word")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-secret-word", description="(admin) Get a given player's secret word")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
     async def admin_get_secret(self, ctx: discord.ApplicationContext, player_discord_id: str):
@@ -42,7 +40,7 @@ class Admin(commands.Cog):
             player_name, _, secret_word = player_info
             await ctx.respond(f"{player_name}'s secret word is ||{secret_word}||", ephemeral=True)
 
-    @admin.command(name="sock", description="(admin) Eliminate a player")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-sock", description="(admin) Eliminate a player")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
     async def sock_player(self, ctx: discord.ApplicationContext, player_discord_id: str):
@@ -55,7 +53,7 @@ class Admin(commands.Cog):
 
         await ctx.respond(f"{player_name} has been socked! (kill ID: {kill_id})")
 
-    @admin.command(name="undo-last-kill", description="(admin) Undoes last kill in the game")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-undo-last-kill", description="(admin) Undoes last kill in the game")
     @discord.default_permissions(administrator=True)
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)")
     async def admin_undo_last_kill(self, ctx: discord.ApplicationContext, are_you_really_sure: str):
@@ -71,7 +69,7 @@ class Admin(commands.Cog):
         kill_id, player_discord_id, eliminated_discord_id = kill_info
         await ctx.respond(f"`kill_id` {kill_id} has been Undone! (`@{player_discord_id}`'s elimination of `@{eliminated_discord_id}`)")
 
-    @admin.command(name="rollback-kills", description="(admin) Undoes kills in the game to a point")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-rollback-kills", description="(admin) Undoes kills in the game to a point")
     @discord.default_permissions(administrator=True)
     @option("rollback_id", type=int, description="Kill ID to rollback to")
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)")
@@ -83,7 +81,7 @@ class Admin(commands.Cog):
         reversed_kills = roll_back_kills_to_id(rollback_id)
         await ctx.respond(f"{reversed_kills} kills have been rolled back")
 
-    @admin.command(guild_ids=GUILD_IDS, name="ingest-csv", description="(admin) Add initial game data from CSV")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-ingest-csv", description="(admin) Add initial game data from CSV")
     @discord.default_permissions(administrator=True)
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)", )
     @option("m_id", description="Message ID")
@@ -103,7 +101,7 @@ class Admin(commands.Cog):
         except:
             await ctx.respond("Something went wrong with this....", ephemeral=True)
 
-    @admin.command(guild_ids=GUILD_IDS, name="delete-game-data", description="(admin) [**DONT TOUCH. BREAK GLASS**] Remove all rows in database")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-delete-game-data", description="(admin) [**DONT TOUCH. BREAK GLASS**] Remove all rows in database")
     @discord.default_permissions(administrator=True)
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)", )
     @option("actually_sure", description="actually sure?")
@@ -118,7 +116,7 @@ class Admin(commands.Cog):
         except:
             await ctx.respond("Something went wrong with this....", ephemeral=True)
 
-    @admin.command(name="reset-secret", description="(admin) Reset a given player's secret word")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-reset-secret", description="(admin) Reset a given player's secret word")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
     @option("new_secret_word", description="The new secret word")

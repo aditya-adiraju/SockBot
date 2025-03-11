@@ -29,9 +29,7 @@ class Stat(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
 
-    stat = discord.SlashCommandGroup('stat', 'Statistical Summary Commands', guild_ids=GUILD_IDS)
-
-    @stat.command(name="all-kills", description="(stat) Get all kills")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-all-kills", description="(stat) Get all kills")
     async def all_kills(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
         
@@ -40,7 +38,7 @@ class Stat(commands.Cog):
         kill_message = _table_to_message(kills, KILL_ENTRY.HEADER)
         await ctx.respond(kill_message)
 
-    @stat.command(name="daily-kills", description="(stat) Get kills from today")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-daily-kills", description="(stat)(admin) Get kills from today")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
     async def daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
@@ -58,7 +56,7 @@ class Stat(commands.Cog):
         kill_message = _table_to_message(kills, KILL_ENTRY.HEADER)
         await ctx.respond(kill_message)
 
-    @stat.command(name="weekly-kills", description="(stat) Get all kills between dates")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-weekly-kills", description="(stat)(admin) Get all kills between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
@@ -76,7 +74,7 @@ class Stat(commands.Cog):
         await ctx.respond(kill_message)
     
 
-    @stat.command(name="top-kills", description="(stat) Get a rollup of overall top players ordered by their kill count")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-kills", description="(stat) Get a rollup of overall top players ordered by their kill count")
     async def top_kills(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
 
@@ -84,7 +82,7 @@ class Stat(commands.Cog):
         message = _table_to_message(kill_summary, KILL_SUMMARY.HEADER)
         await ctx.respond(message)
 
-    @stat.command(name="top-weekly-kills", description="(stat) Get a list of top players between dates")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-weekly-kills", description="(stat)(admin) Get a list of top players between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
@@ -101,8 +99,9 @@ class Stat(commands.Cog):
         message = _table_to_message(kill_summary, KILL_SUMMARY.HEADER)
         await ctx.respond(message)
 
-    @stat.command(name="top-daily-kills", description="(stat) Get a list of top players on a date (defualt today)")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-daily-kills", description="(stat)(admin) Get a list of top players on a date (defualt today)")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
+    @discord.default_permissions(administrator=True)
     async def top_daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
         con = create_db_connection()
         try:
@@ -119,14 +118,14 @@ class Stat(commands.Cog):
         await ctx.respond(kill_message)
 
 
-    @stat.command(name="all-players", description="(stat) Get a list of all player and their elimination status.")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-all-players", description="(stat) Get a list of all player and their elimination status.")
     async def all_players(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
         player_summary = get_all_players(con)
         message = _table_to_message(player_summary, PLAYER.HEADER)
         await ctx.respond(message)
 
-    @stat.command(name="target-assignments", description="(stat) Get a list of all target assignments")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-target-assignments", description="(stat)(admin) Get a list of all target assignments")
     @discord.default_permissions(administrator=True)
     async def all_target_assignments(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
