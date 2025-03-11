@@ -20,7 +20,7 @@ ITS_JOEVER='https://imgur.com/7tk1NT8'
 
 SOCKED_MESSAGE_TEMPLATES = [
     "{player} just socked {target} (ouch!)",
-    "{target} was just socked by {target}!! oWO",
+    "{target} was just socked by {player}!! oWO",
     """*sock*, *sock*
 > who's there? 
 soccer (British accent)
