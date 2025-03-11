@@ -492,6 +492,7 @@ def delete_all_data(con: sqlite3.Connection):
     cur.execute('DELETE FROM player_info')
     cur.execute('DELETE FROM target_assignments')
     cur.execute('DELETE FROM kill_log')
+    cur.execute("UPDATE sqlite_sequence SET seq = 0 WHERE name='kill_log'")
     con.commit()
     
 
