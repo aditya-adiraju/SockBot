@@ -42,6 +42,7 @@ class Stat(commands.Cog):
 
     @stat.command(name="daily-kills", description="(stat) Get kills from today")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
+    @discord.default_permissions(administrator=True)
     async def daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
         con = create_db_connection()
         try:
@@ -60,6 +61,7 @@ class Stat(commands.Cog):
     @stat.command(name="weekly-kills", description="(stat) Get all kills between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
+    @discord.default_permissions(administrator=True)
     async def weekly_kills(self, ctx: discord.ApplicationContext, start_date: str, end_date: str = ""):
         con = create_db_connection()
         try:
@@ -85,6 +87,7 @@ class Stat(commands.Cog):
     @stat.command(name="top-weekly-kills", description="(stat) Get a list of top players between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
+    @discord.default_permissions(administrator=True)
     async def top_weekly_kills(self, ctx: discord.ApplicationContext, start_date: str, end_date: str = ""):
         con = create_db_connection()
         try:
@@ -117,7 +120,6 @@ class Stat(commands.Cog):
 
 
     @stat.command(name="all-players", description="(stat) Get a list of all player and their elimination status.")
-    @discord.default_permissions(administrator=True)
     async def all_players(self, ctx: discord.ApplicationContext):
         con = create_db_connection()
         player_summary = get_all_players(con)
