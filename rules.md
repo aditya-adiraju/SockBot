@@ -31,6 +31,6 @@
 ## Additional Rules:
 - Kills must be reported **within 24 hours**.
 - Kills will be posted *DAILY* to keep all players updated.
-- Always use a __**clean**__ sock—no exceptions!
+- Always use a __**clean**__ and **EMPTY** sock—no exceptions!
 
 
