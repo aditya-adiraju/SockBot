@@ -1,7 +1,6 @@
-from config import GUILD_IDS, YOU_HAVE_NO_ENEMIES
+from config import GUILD_IDS
 from database import *
 from discord.ext import commands
-from discord import Permissions, TextChannel
 from discord.commands import option
 from discord.utils import get
 import discord
@@ -72,7 +71,7 @@ class Admin(commands.Cog):
         kill_id, player_discord_id, eliminated_discord_id = kill_info
         await ctx.respond(f"`kill_id` {kill_id} has been Undone! (`@{player_discord_id}`'s elimination of `@{eliminated_discord_id}`)")
 
-    @admin.command(name="rollback-kills", description="(admin) Undoes last kill in the game")
+    @admin.command(name="rollback-kills", description="(admin) Undoes kills in the game to a point")
     @discord.default_permissions(administrator=True)
     @option("rollback_id", type=int, description="Kill ID to rollback to")
     @option("are_you_really_sure", description="YES/NO (this action is irreversible!)")
