@@ -154,7 +154,7 @@ class Stat(commands.Cog):
         con = create_db_connection()
         assignment_summary = get_target_assignments(con)
         messages = _table_to_message(assignment_summary, TARGET_ASSIGNMENT.HEADER)
-        await ctx.respond(messages[0])
+        await ctx.respond(messages[0], ephemeral=True)
         for m in messages[1:]:
             await ctx.send(m)
 
