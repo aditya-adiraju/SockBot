@@ -30,3 +30,9 @@ sockappella wars has claimed its latest victim {target}.
 """,
     "UwU *giggles* here to report that {player} socked {target} *teehee*"
 ]
+
+DQ_MESSAGE_TEMPLATES = [
+    "{player} was just eliminated. (ouch)",
+    "It's either sock or get socked {player}. The sock lords have eliminated you."
+    "I hope {player} gets a kill next time because they were just eliminated... "
+]

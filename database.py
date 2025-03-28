@@ -167,7 +167,7 @@ def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[st
 
     return (target_discord_id, player_name, group_name, secret_word)
     
-def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str) -> int | None:
+def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str, disqualify: bool = False) -> int | None:
     """Eliminate a given player from the game.
 
     Args:
@@ -193,7 +193,7 @@ def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str) -> int
 
     cur.execute("""
     INSERT INTO kill_log (player_discord_id, target_discord_id) VALUES (?, ?) 
-    """, (player_discord_id, eliminated_discord_id,))
+    """, (disqualify ? 'disqualified' : player_discord_id, eliminated_discord_id,))
 
     kill_id = cur.lastrowid
 
@@ -373,9 +373,11 @@ def get_top_kills(con: sqlite3.Connection ) -> list[KILL_SUMMARY]:
     """
     cur = con.cursor()
     res = cur.execute("""
-    SELECT player_discord_id, count(player_discord_id) as kill_count FROM kill_log
-    GROUP BY player_discord_id
-    ORDER BY kill_count DESC
+    SELECT player_info.discord_id, COUNT(kill_log.player_discord_id) as kill_count 
+    FROM player_info 
+    LEFT JOIN kill_log ON player_info.discord_id = kill_log.player_discord_id 
+    GROUP BY player_info.discord_id 
+    ORDER BY kill_count DESC, kill_log.TIMESTAMP ASC
     """)
     results = res.fetchall()
     kill_summary_list = []

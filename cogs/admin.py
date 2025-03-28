@@ -1,4 +1,5 @@
-from config import GUILD_IDS
+from config import GUILD_IDS, KILL_CHANNEL_ID, DQ_MESSAGE_TEMPLATES
+import random
 from database import *
 from discord.ext import commands
 from discord.commands import option
@@ -52,6 +53,28 @@ class Admin(commands.Cog):
         kill_id = eliminate_player(con, player_discord_id)
 
         await ctx.respond(f"{player_name} has been socked! (kill ID: {kill_id})")
+
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-disqualify", description="(admin) Disqualify a player")
+    @discord.default_permissions(administrator=True)
+    @option("player_discord_id", description="The player's discord id")
+    async def admin_disqualify(self, ctx: discord.ApplicationContext, player_discord_id: str):
+        con = create_db_connection()
+        if (player_info := get_player_info(con, player_discord_id)) is None:
+            await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
+            return
+        player_name, _, _ = player_info
+        kill_id = eliminate_player(con, player_discord_id, True)
+
+        kill_message = random.choice(DQ_MESSAGE_TEMPLATES).format(player=player_name) 
+        kill_message += f"\n-# Kill ID: {kill_id}"
+
+
+        channel = self.bot.get_channel(KILL_CHANNEL_ID)
+        if channel:
+            await channel.send(kill_message)
+        else:
+            await ctx.send(kill_message)
+        await ctx.respond(f"{player_name} has been eliminated! (kill ID: {kill_id})")
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-undo-last-kill", description="(admin) Undoes last kill in the game")
     @discord.default_permissions(administrator=True)
