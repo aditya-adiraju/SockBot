@@ -193,7 +193,7 @@ def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str, disqua
 
     cur.execute("""
     INSERT INTO kill_log (player_discord_id, target_discord_id) VALUES (?, ?) 
-    """, (disqualify ? 'disqualified' : player_discord_id, eliminated_discord_id,))
+    """, ('disqualified' if disqualify else player_discord_id, eliminated_discord_id,))
 
     kill_id = cur.lastrowid
 
