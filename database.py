@@ -434,14 +434,17 @@ def get_top_kills_on_date(con: sqlite3.Connection, date: datetime) -> list[KILL_
     return get_top_kills_between_dates(con, date, date)
 
 
-def get_all_players(con: sqlite3.Connection) -> list[PLAYER]:
+def get_all_players(con: sqlite3.Connection, active_players_only: bool =False) -> list[PLAYER]:
     """Returns a list of all players
 
     Args:
         con: database connection
     """
     cur = con.cursor()
-    res = cur.execute("SELECT *, EXISTS(SELECT 1 FROM kill_log WHERE target_discord_id = player_info.discord_id) as eliminated FROM player_info")
+    query = "SELECT *, EXISTS(SELECT 1 FROM kill_log WHERE target_discord_id = player_info.discord_id) as eliminated FROM player_info"
+    if active_players_only:
+        query += "\n WHERE eliminated = 0"
+    res = cur.execute(query)
     results = res.fetchall()
 
     player_list = []

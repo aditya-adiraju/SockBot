@@ -138,6 +138,14 @@ class Stat(commands.Cog):
         for m in messages[1:]:
             await ctx.send(m)
 
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-active-players", description="(stat) Get a list of all uneliminated players")
+    async def active_players(self, ctx: discord.ApplicationContext):
+        con = create_db_connection()
+        player_summary = get_all_players(con, active_players_only=True)
+        messages = _table_to_message(player_summary, PLAYER.HEADER)
+        await ctx.respond(messages[0])
+        for m in messages[1:]:
+            await ctx.send(m)
 
     @commands.slash_command(guild_ids=GUILD_IDS, name="stat-all-players", description="(stat) Get a list of all player and their elimination status.")
     async def all_players(self, ctx: discord.ApplicationContext):
