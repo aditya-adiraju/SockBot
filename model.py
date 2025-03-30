@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class PLAYER:
-    HEADER = f"{"player_id":<20}{"player_name":<30}{"group_name":<15}{"secret_word":<15}{"ELIMINATED"}"
+    HEADER = f"{"player_id":<20}{"player_name":<40}{"group_name":<15}{"secret_word":<20}{"ELIMINATED"}"
     def __init__(self, player_discord_id: str, player_name: str, group_name: str, secret_word: str, eliminated: bool = False):
         self.player_id = player_discord_id.strip()
         self.player_name = player_name.strip()
