@@ -5,7 +5,7 @@ from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES, ITS_JOEVER, ERROR_CHAN
 from logger import error, info, debug 
 
 bot = discord.Bot()
-
+FREE_FOR_ALL = True
 @bot.event
 async def on_ready():
     info(f"{bot.user} is ready and online!")
@@ -55,24 +55,46 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
     player_discord_id = ctx.author.name
     con = create_db_connection()
 
-    if (player_info := get_player_info(con, player_discord_id)) is None:
-        await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
-        return
-    player_name, _, _ = player_info
+    if FREE_FOR_ALL:
+        is_eliminated = True
+        player_name = ''
+        if (all_players := get_all_players(con, active_players_only=True)) is None:
+            await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
+            return
+        for player in all_players:
+            if player.player_id == player_discord_id:
+                is_eliminated = False 
+                player_name = player.name
+                break
+        if is_eliminated:
+            LOSE_MESSAGE = f"# You've been eliminated! \n\n\n{ITS_JOEVER}"
+            await ctx.respond(LOSE_MESSAGE, ephemeral=True)
+            return
 
-    if (target_info := get_target_info(con, player_discord_id)) is None:
-        await ctx.respond(f"You have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}", ephemeral=True)
-        return
+    else: 
+        if (player_info := get_player_info(con, player_discord_id)) is None:
+            await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
+            return
+
+        player_name, _, _ = player_info
+
+    if FREE_FOR_ALL:
+        if (target_info := get_target_info_by_secret_word(con, secret_word)) is None:
+            await ctx.respond(f"No player with secret: {secret_word}", ephemeral=True)
+            return
+    else:
+        if (target_info := get_target_info(con, player_discord_id)) is None:
+            await ctx.respond(f"You have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}", ephemeral=True)
+            return
+
     target_id, target_name, _, target_secret_word = target_info
 
     debug(target_info)
     if target_secret_word.strip().lower() == secret_word.strip().lower():
         kill_id = eliminate_player(con, target_id)
 
-
         kill_message = random.choice(SOCKED_MESSAGE_TEMPLATES).format(player=player_name, target=target_name) 
         kill_message += f"\n-# Kill ID: {kill_id}"
-
 
         channel = bot.get_channel(KILL_CHANNEL_ID)
         if channel:

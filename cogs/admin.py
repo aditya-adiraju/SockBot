@@ -54,6 +54,18 @@ class Admin(commands.Cog):
 
         await ctx.respond(f"{player_name} has been socked! (kill ID: {kill_id})")
 
+    @commands.slash_command(guild_ids=GUILD_IDS, name="admin-get-player-by-secret", description="(admin) Get a player by their secret word")
+    @discord.default_permissions(administrator=True)
+    @option("secret", description="The player's secret word")
+    async def admin_get_player_by_secret(self, ctx: discord.ApplicationContext, secret : str):
+        secret = secret.strip().lower()
+        con = create_db_connection()
+        if (target_info := get_target_info_by_secret_word(con, secret)) is None:
+            await ctx.respond(f"No such player with secret word: {secret}`", ephemeral=True)
+            return
+        target_id, target_name, group_name, secret_word = target_info
+        await ctx.respond(f"{target_id}", ephemeral=True)
+
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-disqualify", description="(admin) Disqualify a player")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")

@@ -137,6 +137,22 @@ def get_player_info(con: sqlite3.Connection, discord_id: str) -> tuple[str, str,
 
     return (player_name, group_name, secret_word)
 
+def get_target_info_by_secret_word(con: sqlite3.Connection, secret: str):
+    cur = con.cursor()
+    res = cur.execute("""
+    SELECT target_assignments.target_discord_id, player_info.player_name, player_info.group_name, player_info.secret_word
+    FROM target_assignments
+    INNER JOIN player_info ON player_info.discord_id = target_assignments.target_discord_id
+    WHERE player_info.secret_word = ?
+    """, (secret,))
+
+    if (row := res.fetchone()) is None:
+        error(f"No target associated with {secret}")
+        return None
+    target_discord_id, player_name, group_name, secret_word = row[0], row[1], row[2], row[3]
+
+    return (target_discord_id, player_name, group_name, secret_word)
+
 def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[str, str, str, str] | None:
     """Retrieves a given player's target information
 
