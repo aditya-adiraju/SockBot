@@ -64,7 +64,7 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
         for player in all_players:
             if player.player_id == player_discord_id:
                 is_eliminated = False 
-                player_name = player.name
+                player_name = player.player_name
                 break
         if is_eliminated:
             LOSE_MESSAGE = f"# You've been eliminated! \n\n\n{ITS_JOEVER}"
