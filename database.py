@@ -183,7 +183,7 @@ def get_target_info(con: sqlite3.Connection, player_discord_id: str) -> tuple[st
 
     return (target_discord_id, player_name, group_name, secret_word)
     
-def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str, disqualify: bool = False) -> int | None:
+def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str, disqualify: bool = False, player_id: str = None) -> int | None:
     """Eliminate a given player from the game.
 
     Args:
@@ -206,10 +206,10 @@ def eliminate_player(con: sqlite3.Connection, eliminated_discord_id: str, disqua
 
     if (new_target_info := get_target_info(con, eliminated_discord_id)) is None: return None
     new_target_discord_id, _, _, _ = new_target_info
-
+    player = 'disqualified' if disqualify else (player_discord_id if player_id is None else player_id)
     cur.execute("""
     INSERT INTO kill_log (player_discord_id, target_discord_id) VALUES (?, ?) 
-    """, ('disqualified' if disqualify else player_discord_id, eliminated_discord_id,))
+    """, (player, eliminated_discord_id,))
 
     kill_id = cur.lastrowid
 

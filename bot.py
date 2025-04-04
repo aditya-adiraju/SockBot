@@ -91,7 +91,7 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
 
     debug(target_info)
     if target_secret_word.strip().lower() == secret_word.strip().lower():
-        kill_id = eliminate_player(con, target_id)
+        kill_id = eliminate_player(con, target_id, player_id=player_discord_id)
 
         kill_message = random.choice(SOCKED_MESSAGE_TEMPLATES).format(player=player_name, target=target_name) 
         kill_message += f"\n-# Kill ID: {kill_id}"
