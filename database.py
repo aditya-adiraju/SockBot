@@ -2,6 +2,8 @@ import sqlite3
 import csv
 from datetime import datetime
 from typing import Literal
+import random
+import string
 from logger import info, debug, error
 
 from model import *
@@ -86,6 +88,30 @@ def add_initial_data(con: sqlite3.Connection, csv_source_filename: str):
     con.commit()
 
     cur.executemany("INSERT OR REPLACE INTO target_assignments (player_discord_id, target_discord_id) VALUES(?, ?)", (target_assignments_data))
+    con.commit()
+
+def add_player(con: sqlite3.Connection, discord_id: str, player_name: str, group_name: str):
+    """Populates the database with initial data from given CSV file
+
+    Args:
+        con: sqlite Database connection
+        csv_source_filename: filepath to CSV data
+
+    Raises:
+        OSError: if file does not exist.
+     
+    Table headers: Discord ID, Name, Group, Target_discord_id, Secret Word 
+    """
+
+    secret_word = "".join([random.choice(string.ascii_lowercase) for _ in range(10)])
+    debug(f"SECRET WORD: {secret_word}")
+
+    player_info_data = (discord_id, player_name, group_name, secret_word)
+    cur = con.cursor()
+
+    cur.execute("""INSERT OR REPLACE INTO player_info 
+                    (discord_id, player_name, group_name, secret_word) VALUES(?, ?, ?, ?)
+                    """, player_info_data)
     con.commit()
 
 def get_player_target(con: sqlite3.Connection, player_discord_id: str) -> str | None:

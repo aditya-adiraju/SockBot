@@ -10,6 +10,8 @@ TOKEN = os.environ['TOKEN']
 # Sockwars server guild id
 GUILD_ID = int(os.environ['GUILD_ID'])
 
+SOCKWARS_PLAYER_ROLE=1480367660695814378
+
 # Convenience variable...
 GUILD_IDS = [GUILD_ID]
 ERROR_CHANNEL_ID = int(os.environ['ERROR_CHANNEL_ID'])

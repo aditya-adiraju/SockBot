@@ -1,11 +1,18 @@
 import discord
 import random
 from database import *
-from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES, ITS_JOEVER, ERROR_CHANNEL_ID, SOCKED_MESSAGE_TEMPLATES, KILL_CHANNEL_ID 
+from config import TOKEN, GUILD_IDS, YOU_HAVE_NO_ENEMIES, ITS_JOEVER, ERROR_CHANNEL_ID, SOCKED_MESSAGE_TEMPLATES, KILL_CHANNEL_ID, SOCKWARS_PLAYER_ROLE
 from logger import error, info, debug 
 
-bot = discord.Bot()
-FREE_FOR_ALL = True
+intents = discord.Intents.default()
+intents.members = True
+bot = discord.Bot(intents=intents)
+
+FREE_FOR_ALL = False 
+
+GROUPS = ["Eh?", "Fermata", "Forte", "Majors", "Minors", "NWC", "Reef"]
+get_groups = lambda x: GROUPS
+
 @bot.event
 async def on_ready():
     info(f"{bot.user} is ready and online!")
@@ -25,7 +32,7 @@ async def on_application_command_error(ctx: discord.ApplicationContext, err: Exc
 async def rules(ctx: discord.ApplicationContext):
     with open('rules.md') as f:
         rules ='\n'.join(line.rstrip() for line in f)
-    await ctx.respond(rules, ephemeral=True)
+    await ctx.respond(rules)
 
 @bot.slash_command(guild_ids=GUILD_IDS, name="get-target", description="Tells you who your Target is")
 async def target(ctx: discord.ApplicationContext):
@@ -106,6 +113,22 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
     else:
         await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
                           """, ephemeral=True)
+
+## REGISTRATION
+@bot.slash_command(guild_ids=GUILD_IDS, name="register", description="You are hungry for the sock...")
+@discord.option("name", description="Your (preferred) name")
+@discord.option("group", description="What group are you in?", choices=GROUPS)
+async def register(ctx: discord.ApplicationContext, name: str, group: str):
+    if group not in GROUPS:
+        await ctx.respond("Please select a group from the dropdown", ephemeral=True)
+        return
+    player_discord_id = ctx.author.name
+    con = create_db_connection()
+    add_player(con, player_discord_id, name, group)
+    role = ctx.guild.get_role(SOCKWARS_PLAYER_ROLE)
+    await ctx.author.add_roles(role)
+    debug(f"Registration: {name} | {group} | {ctx.author.name}")
+    await ctx.respond(f"Hi {name} from {group}! `@{ctx.author.name}`, you have been registered!", ephemeral=True)
 
 def setup():
     con = create_db_connection()
