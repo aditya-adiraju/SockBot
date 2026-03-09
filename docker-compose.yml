@@ -5,6 +5,7 @@ services:
     volumes:
       - .env:/home/sockie/sockbot/.env
       - ./data:/home/sockie/sockbot/data
+      - ./logs:/home/sockie/sockbot/logs
 
     deploy:
       resources:

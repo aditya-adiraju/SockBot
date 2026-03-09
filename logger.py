@@ -15,7 +15,7 @@ def _generate_timestamp() -> str:
 
 def _log(log_level: str, *values: object, sep: str | None = " ", end: str | None = "\n") -> str | None:
     print(f"[{log_level}][{_generate_timestamp()}]", *values, sep=sep, end=end)
-    log_file_name = 'debug_log.txt' if log_level == LOG_LEVEL.DEBUG else 'log.txt'
+    log_file_name = 'logs/debug_log.txt' if log_level == LOG_LEVEL.DEBUG else 'logs/log.txt'
     with open(log_file_name, 'a') as log_file:
         print(f"[{log_level}] [{_generate_timestamp()}]", *values, sep=sep, end=end, file=log_file)
     
