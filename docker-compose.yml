@@ -1,0 +1,20 @@
+services:
+  sockbot:
+    build: .
+    restart: on-failure  # Restarts only on failure
+    volumes:
+      - .env:/home/sockie/sockbot/.env
+      - ./data:/home/sockie/sockbot/data
+
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 175M
+          pids: 10
+        reservations:
+          cpus: '0.15'
+          memory: 100M
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
