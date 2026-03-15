@@ -47,7 +47,7 @@ class Stat(commands.Cog):
         for m in kill_messages[1:]:
             await ctx.send(m)
 
-    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-daily-kills", description="(stat)(admin) Get kills from today")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-daily-kills", description="(stat) (admin) Get kills from today")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
     async def daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
@@ -67,7 +67,7 @@ class Stat(commands.Cog):
         for m in kill_messages[1:]:
             await ctx.send(m)
 
-    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-weekly-kills", description="(stat)(admin) Get all kills between dates")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-weekly-kills", description="(stat) (admin) Get all kills between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
@@ -98,7 +98,7 @@ class Stat(commands.Cog):
         for m in messages[1:]:
             await ctx.send(m)
 
-    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-weekly-kills", description="(stat)(admin) Get a list of top players between dates")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-weekly-kills", description="(stat) (admin) Get a list of top players between dates")
     @option(name='start_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=True)
     @option(name='end_date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
@@ -117,7 +117,7 @@ class Stat(commands.Cog):
         for m in messages[1:]:
             await ctx.send(m)
 
-    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-daily-kills", description="(stat)(admin) Get a list of top players on a date (defualt today)")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-top-daily-kills", description="(stat) (admin) Get a list of top players on a date (defualt today)")
     @option(name='date', description="(optional) provide a specific date (YYYY-MM-DD)", required=False)
     @discord.default_permissions(administrator=True)
     async def top_daily_kills(self, ctx: discord.ApplicationContext, date: str = ''):
@@ -156,7 +156,7 @@ class Stat(commands.Cog):
         for m in messages[1:]:
             await ctx.send(m)
 
-    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-target-assignments", description="(stat)(admin) Get a list of all target assignments")
+    @commands.slash_command(guild_ids=GUILD_IDS, name="stat-target-assignments", description="(stat) (admin) Get a list of all target assignments")
     @discord.default_permissions(administrator=True)
     async def all_target_assignments(self, ctx: discord.ApplicationContext):
         con = create_db_connection()

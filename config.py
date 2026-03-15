@@ -1,7 +1,6 @@
 from dotenv import load_dotenv
 import os
 
-
 load_dotenv()
 
 # Discord auth token
@@ -18,10 +17,11 @@ ERROR_CHANNEL_ID = int(os.environ['ERROR_CHANNEL_ID'])
 KILL_CHANNEL_ID = int(os.environ['KILL_CHANNEL_ID'])
 
 YOU_HAVE_NO_ENEMIES="https://imgur.com/F628Puf"
-ITS_JOEVER='https://imgur.com/7tk1NT8'
+ITS_JOEVER='https://imgur.com/25oDe8x'
+
 
 SOCKED_MESSAGE_TEMPLATES = [
-    "{player} just socked {target} (ouch!)",
+    "{player} just socked {target} (ouchie!)",
     "{target} was just socked by {player}!! oWO",
     """*sock*, *sock*
 > who's there? 
@@ -30,7 +30,7 @@ soccer (British accent)
 sockappella wars has claimed its latest victim {target}.
 `CAUSE OF DEATH:` getting socked by {player}
 """,
-    "UwU *giggles* here to report that {player} socked {target} *teehee*"
+    "{player} mogged {target} with only a sock! just aurafarming fr",
 ]
 
 DQ_MESSAGE_TEMPLATES = [

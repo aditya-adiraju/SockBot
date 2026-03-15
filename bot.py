@@ -36,8 +36,8 @@ async def rules(ctx: discord.ApplicationContext):
 
 @bot.slash_command(guild_ids=GUILD_IDS, name="get-target", description="Tells you who your Target is")
 async def target(ctx: discord.ApplicationContext):
-    WIN_MESSAGE = f"# You win! \nyou have no enemies... It's over.\n\n\n{YOU_HAVE_NO_ENEMIES}"
-    LOSE_MESSAGE = f"# You've been eliminated! \n\n\n{ITS_JOEVER}"
+    WIN_MESSAGE = f"# You win! \nyou have no enemies... It's over fr this time.\n\n\n{YOU_HAVE_NO_ENEMIES}"
+    LOSE_MESSAGE = f"# You've been eliminated! (I'm sorry, you got framemogged) \n\n\n{ITS_JOEVER}"
     player_discord_id = ctx.author.name
     con = create_db_connection()
     if (target_info := get_target_info(con, player_discord_id)) is None:

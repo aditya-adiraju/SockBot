@@ -33,4 +33,5 @@
 - Kills will be posted *DAILY* to keep all players updated.
 - Always use a __**clean**__ and **EMPTY** sock—no exceptions!
 
-
+And most importantly,
+# Please do not attempt to physically injure your fellow members (a tap on the shoulder with a sock should be enough!)

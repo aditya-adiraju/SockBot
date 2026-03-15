@@ -12,7 +12,7 @@ class PLAYER:
 
     def __str__(self):
         secret = self.secret_word if self.eliminated else "[REDACT]" 
-        return f"{self.player_id:<20}{self.player_name:<30}{self.group_name:<15}{secret:<15}{self.eliminated}"
+        return f"{self.player_id:<20}{self.player_name:<30}{self.group_name:<15}{secret:<20}{self.eliminated}"
 
 class TARGET_ASSIGNMENT:
     HEADER = f"{"player_id":<20}{"target_id":<20}"
