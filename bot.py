@@ -40,6 +40,9 @@ async def target(ctx: discord.ApplicationContext):
     LOSE_MESSAGE = f"# You've been eliminated! (I'm sorry, you got framemogged) \n\n\n{ITS_JOEVER}"
     player_discord_id = ctx.author.name
     con = create_db_connection()
+    if (player_info := get_player_info(con, player_discord_id)) is None:
+        await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
+        return
     if (target_info := get_target_info(con, player_discord_id)) is None:
         await ctx.respond(LOSE_MESSAGE, ephemeral=True)
         return
@@ -53,7 +56,10 @@ async def target(ctx: discord.ApplicationContext):
 async def retrieve_secret_word(ctx: discord.ApplicationContext):
     player_discord_id = ctx.author.name
     con = create_db_connection()
-    player_name, _, secret_word = get_player_info(con, player_discord_id)
+    if (player_info := get_player_info(con, player_discord_id)) is None:
+        await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
+        return
+    player_name, _, secret_word = player_info
     await ctx.respond(f"Hi {player_name}, Your Secret Word is ||{secret_word}||", ephemeral=True)
 
 @bot.slash_command(guild_ids=GUILD_IDS, name="sock", description="Sock your target with their secret word!")
@@ -114,21 +120,21 @@ async def sock_player(ctx: discord.ApplicationContext, secret_word: str):
         await ctx.respond(f"""Unfortunately, {secret_word} is not your target's secret word. Make sure you spell the secret word correctly. \n If you think there has been a mistake, contact an admin.
                           """, ephemeral=True)
 
-## REGISTRATION
-@bot.slash_command(guild_ids=GUILD_IDS, name="register", description="You are hungry for the sock...")
-@discord.option("name", description="Your (preferred) name")
-@discord.option("group", description="What group are you in?", choices=GROUPS)
-async def register(ctx: discord.ApplicationContext, name: str, group: str):
-    if group not in GROUPS:
-        await ctx.respond("Please select a group from the dropdown", ephemeral=True)
-        return
-    player_discord_id = ctx.author.name
-    con = create_db_connection()
-    add_player(con, player_discord_id, name, group)
-    role = ctx.guild.get_role(SOCKWARS_PLAYER_ROLE)
-    await ctx.author.add_roles(role)
-    debug(f"Registration: {name} | {group} | {ctx.author.name}")
-    await ctx.respond(f"Hi {name} from {group}! `@{ctx.author.name}`, you have been registered!", ephemeral=True)
+# ## REGISTRATION
+# @bot.slash_command(guild_ids=GUILD_IDS, name="register", description="You are hungry for the sock...")
+# @discord.option("name", description="Your (preferred) name")
+# @discord.option("group", description="What group are you in?", choices=GROUPS)
+# async def register(ctx: discord.ApplicationContext, name: str, group: str):
+#     if group not in GROUPS:
+#         await ctx.respond("Please select a group from the dropdown", ephemeral=True)
+#         return
+#     player_discord_id = ctx.author.name
+#     con = create_db_connection()
+#     add_player(con, player_discord_id, name, group)
+#     role = ctx.guild.get_role(SOCKWARS_PLAYER_ROLE)
+#     await ctx.author.add_roles(role)
+#     debug(f"Registration: {name} | {group} | {ctx.author.name}")
+#     await ctx.respond(f"Hi {name} from {group}! `@{ctx.author.name}`, you have been registered!", ephemeral=True)
 
 def setup():
     con = create_db_connection()
