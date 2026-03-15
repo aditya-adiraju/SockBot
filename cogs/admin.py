@@ -13,7 +13,8 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-target", description="(admin) Get a given player's target")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def admin_target(self, ctx: discord.ApplicationContext, player_discord_id: str):
+    async def admin_target(self, ctx: discord.ApplicationContext, player_discord_id: discord.Member):
+        player_discord_id = player_discord_id.name
         player_discord_id = player_discord_id.strip()
         con = create_db_connection()
         player_info = get_player_info(con, player_discord_id)
@@ -31,8 +32,8 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-secret-word", description="(admin) Get a given player's secret word")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def admin_secret_word(self, ctx: discord.ApplicationContext, player_discord_id: str):
-        player_discord_id = player_discord_id.strip()
+    async def admin_secret_word(self, ctx: discord.ApplicationContext, player_discord_id: discord.Member):
+        player_discord_id = player_discord_id.name
         con = create_db_connection()
         player_info = get_player_info(con, player_discord_id)
         if player_info is None:
@@ -44,7 +45,8 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-sock", description="(admin) Eliminate a player")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def admin_sock(self, ctx: discord.ApplicationContext, player_discord_id: str):
+    async def admin_sock(self, ctx: discord.ApplicationContext, player_discord_id: discord.Member):
+        player_discord_id = player_discord_id.name
         con = create_db_connection()
         if (player_info := get_player_info(con, player_discord_id)) is None:
             await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
@@ -69,7 +71,8 @@ class Admin(commands.Cog):
     @commands.slash_command(guild_ids=GUILD_IDS, name="admin-disqualify", description="(admin) Disqualify a player")
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
-    async def admin_disqualify(self, ctx: discord.ApplicationContext, player_discord_id: str):
+    async def admin_disqualify(self, ctx: discord.ApplicationContext, player_discord_id: discord.Member):
+        player_discord_id = player_discord_id.name
         con = create_db_connection()
         if (player_info := get_player_info(con, player_discord_id)) is None:
             await ctx.respond(f"No such player exists: `@{player_discord_id}`", ephemeral=True)
@@ -155,8 +158,8 @@ class Admin(commands.Cog):
     @discord.default_permissions(administrator=True)
     @option("player_discord_id", description="The player's discord id")
     @option("new_secret_word", description="The new secret word")
-    async def admin_reset_secret(self, ctx: discord.ApplicationContext, player_discord_id: str, new_secret_word: str):
-        
+    async def admin_reset_secret(self, ctx: discord.ApplicationContext, player_discord_id: discord.Member, new_secret_word: str):
+        player_discord_id = player_discord_id.name
         con = create_db_connection()
         old_secret_word = set_player_secret_word(con, player_discord_id, new_secret_word)
         if old_secret_word is None:
