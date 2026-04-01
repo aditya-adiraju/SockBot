@@ -19,16 +19,10 @@ YOU_HAVE_NO_ENEMIES="https://imgur.com/F628Puf"
 ITS_JOEVER='https://imgur.com/7tk1NT8'
 
 SOCKED_MESSAGE_TEMPLATES = [
-    "{player} just socked {target} (ouch!)",
-    "{target} was just socked by {player}!! oWO",
-    """*sock*, *sock*
-> who's there? 
-soccer (British accent)
-> soccer who? 
-sockappella wars has claimed its latest victim {target}.
-`CAUSE OF DEATH:` getting socked by {player}
-""",
-    "UwU *giggles* here to report that {player} socked {target} *teehee*"
+    "It's either sock or get socked {target}. The ~~Sock Council~~ I mean... {player} has made their choice.",
+    "The odds were not in {target}'s favor.\nPerhaps, {player} fairs better.",
+    "UwU *giggles* here to report that {player} socked {target} *teehee*",
+    "The Cornucopia has claimed {target}, courtesy of {player} OwO!"
 ]
 
 DQ_MESSAGE_TEMPLATES = [
