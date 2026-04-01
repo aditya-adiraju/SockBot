@@ -19,18 +19,11 @@ KILL_CHANNEL_ID = int(os.environ['KILL_CHANNEL_ID'])
 YOU_HAVE_NO_ENEMIES="https://imgur.com/F628Puf"
 ITS_JOEVER='https://imgur.com/25oDe8x'
 
-
 SOCKED_MESSAGE_TEMPLATES = [
-    "{player} just socked {target} (ouchie!)",
-    "{target} was just socked by {player}!! oWO",
-    """*sock*, *sock*
-> who's there? 
-soccer (British accent)
-> soccer who? 
-sockappella wars has claimed its latest victim {target}.
-`CAUSE OF DEATH:` getting socked by {player}
-""",
-    "{player} mogged {target} with only a sock! just aurafarming fr",
+    "It's either sock or get socked {target}. The ~~Sock Council~~ I mean... {player} has made their choice.",
+    "The odds were not in {target}'s favor.\nPerhaps, {player} fairs better.",
+    "UwU *giggles* here to report that {player} socked {target} *teehee*",
+    "The Cornucopia has claimed {target}, courtesy of {player} OwO!"
 ]
 
 DQ_MESSAGE_TEMPLATES = [
